@@ -1,0 +1,1664 @@
+{
+  "name": "Kaniu Animal dados",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kaniu-animal-dados",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        80
+      ],
+      "id": "34b4ae80-e72b-4ce8-9874-a696b2858fb9",
+      "name": "Animal",
+      "webhookId": "1fc5f8c9-f235-422d-8674-c49ce8b23af2"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "registros_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -240
+      ],
+      "id": "1f2d2a5a-126c-409c-8eb9-89a9dd611a3c",
+      "name": "Get Eventos",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "pesagens_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -112
+      ],
+      "id": "b46ccfef-128a-4911-8688-933fbb5891d2",
+      "name": "Get Pesagens",
+      "notesInFlow": true,
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "anamneses_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        16
+      ],
+      "id": "f249e869-d961-4f6d-9d7c-0672fef71c79",
+      "name": "Get Avaliacoes",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "imunizacao_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        144
+      ],
+      "id": "425bd176-5037-415f-81b0-9546449a88f0",
+      "name": "Get Imunizacoes",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "prescricao_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        272
+      ],
+      "id": "efaa65f1-1d12-4549-8696-824bd47197f7",
+      "name": "Get Tratamentos",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "arquivos_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        400
+      ],
+      "id": "6938d0bb-961a-4a91-a10e-1e076e261c96",
+      "name": "Get Arquivos",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "eventos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "aa6aeb7c-d056-4d9c-a4da-a45f5df171bf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "eventos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "44484723-8fcf-4dcd-a924-1f76b74d626d",
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "pesagens",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pesagens"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fd5a74fb-592a-4533-b1d0-8d24f1131c14",
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "avaliacoes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "avaliacoes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ee9619d2-ad22-45cc-a7af-b9de7e5df7c7",
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "imunizacoes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "imunizacoes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5e0b0326-064f-4ef5-a1ba-56d2796dbdc4",
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "tratamentos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "tratamentos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ee17527f-a9d7-4932-be38-db757a6160dc",
+                    "leftValue": "={{ $json.body.tab_name }}",
+                    "rightValue": "arquivos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "arquivos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -544,
+        16
+      ],
+      "id": "9a1a09f5-066b-4729-982c-3a5a07de2370",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1328,
+        80
+      ],
+      "id": "f2cfb90a-6779-412b-bfd4-a146a285d2ae",
+      "name": "Respond"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c6d358f-f8f3-4ec0-8e4b-00856b11fcc8",
+              "name": "id",
+              "value": "={{ $json.registro_id }}",
+              "type": "number"
+            },
+            {
+              "id": "557cc3c3-8e38-4ad9-a6c0-79f627a932ef",
+              "name": "data",
+              "value": "={{ $json.data_exibicao }}",
+              "type": "string"
+            },
+            {
+              "id": "d9992638-e708-42eb-b947-28765505ad0a",
+              "name": "tipo",
+              "value": "={{ $json.tipo }}",
+              "type": "string"
+            },
+            {
+              "id": "3653e455-ed38-4e13-af20-10316e281065",
+              "name": "descricao",
+              "value": "={{ $json.descricao }}",
+              "type": "string"
+            },
+            {
+              "id": "391a071d-2a51-48a0-8d74-da15733695f6",
+              "name": "veterinario_id",
+              "value": "={{ $json.veterinario_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a10832f0-07d4-4f8a-93e7-2667e36b1eb5",
+              "name": "Veterinário",
+              "value": "={{ $json.nome_veterinario }}",
+              "type": "string"
+            },
+            {
+              "id": "58da6e59-a651-49ee-95f8-0c2bf3a5567f",
+              "name": "Status",
+              "value": "={{ $json.concluido ? 'Concluído' : $json.programado ? 'Programado' : $json.atrasado ? 'Atrasado' : 'Indefinido' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        -240
+      ],
+      "id": "6ed76a98-3d6d-402f-9acf-aaede3361d98",
+      "name": "Vars Eventos",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4726aa20-0461-47a0-8b0c-f0705ab048a8",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "0d3d3032-e28b-44a2-bf3e-92fa1ac7f6a2",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "7b9ce1e7-77db-45be-a542-abc937c4c304",
+              "name": "peso",
+              "value": "={{ $json.peso }}",
+              "type": "number"
+            },
+            {
+              "id": "4aa01aa1-8506-456d-93a9-7d2d52d31ee0",
+              "name": "variacao",
+              "value": "={{ Math.floor($json.variacao*100*10)/10 }}%",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        -112
+      ],
+      "id": "9f8d7cb5-f925-4d3a-b418-354cf458049a",
+      "name": "Vars Pesagens",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d34fc2ed-5d16-4e0f-b69f-6d07e2180aa2",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "3f6d40f5-7203-4168-a2b8-605abd6e5b92",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "414288f6-ab47-4534-a195-91b3594bab12",
+              "name": "Observação",
+              "value": "={{ $json.observacao }}",
+              "type": "string"
+            },
+            {
+              "id": "11d855f8-c840-41bb-b7d1-194aca4e8c66",
+              "name": "Veterinário",
+              "value": "={{ $json.veterinario_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "cf9f8d60-2458-47f3-a607-aeda46d74b83",
+              "name": "Temperatura",
+              "value": "={{ $json.temperatura }}",
+              "type": "string"
+            },
+            {
+              "id": "5993d3ee-060d-47eb-aa38-9bee8e352b04",
+              "name": "Score",
+              "value": "={{ $json.score }}",
+              "type": "string"
+            },
+            {
+              "id": "6d8e4d98-423d-4ac9-a319-cbdbbbc7a052",
+              "name": "Peso",
+              "value": "={{ $json.peso }}",
+              "type": "number"
+            },
+            {
+              "id": "053ad00e-f559-4070-8714-bd000d1b6452",
+              "name": "Nota",
+              "value": "={{ Math.trunc($json.nota*100) }}",
+              "type": "string"
+            },
+            {
+              "id": "10a8a038-c441-489e-9f26-c9d026be1a53",
+              "name": "veterinario_id",
+              "value": "={{ $json.veterinario }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        16
+      ],
+      "id": "ea18e801-d4f8-4695-82a2-c8df24cab3b3",
+      "name": "Vars Avaliacoes",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bfab8dc1-bdc4-4658-98cb-9e096424c36e",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "b6d97751-e8c8-47db-af36-41953f21f7b1",
+              "name": "data",
+              "value": "={{ $json.data_exibicao }}",
+              "type": "string"
+            },
+            {
+              "id": "67e8b464-b61f-4376-abaa-9be2bc175a0c",
+              "name": "Tipo",
+              "value": "={{ $json.tipo }}",
+              "type": "string"
+            },
+            {
+              "id": "6578bde1-8126-4f26-994f-adfdf4d6980c",
+              "name": "Imunizante",
+              "value": "={{ $json.nome_imunizante }}",
+              "type": "string"
+            },
+            {
+              "id": "ffe827ed-71c8-46a1-8848-c460ad6b7d8c",
+              "name": "Descrição",
+              "value": "={{ $json.descricao }}",
+              "type": "string"
+            },
+            {
+              "id": "3538b9bf-68c2-4bd5-ae8b-f7da6984c2fd",
+              "name": "Veterinário",
+              "value": "={{ $json.veterinario_nome || ''}}",
+              "type": "string"
+            },
+            {
+              "id": "19b2b7d3-4c12-49e0-adae-56f043644d0e",
+              "name": "Status",
+              "value": "={{ $json.aplicada ? 'Aplicada' : $json.futura ? 'Programada' : 'Atrasada' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        144
+      ],
+      "id": "26b11f2c-b033-45d8-84aa-2bb35823ff48",
+      "name": "Vars Imunizacoes",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62b571f0-4d39-4c0d-aa9a-47748f4a5a54",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "3298b1b0-8415-4d41-8a10-0fe3b6036e25",
+              "name": "data",
+              "value": "={{ $json.inicio }}",
+              "type": "string"
+            },
+            {
+              "id": "3af1e8bb-e32e-4bdb-9e11-bf67a59e8f65",
+              "name": "Duração",
+              "value": "={{ $json.duracao_dias + ' dias'}}",
+              "type": "string"
+            },
+            {
+              "id": "a3669bc4-5849-4fd5-ad30-75ac2b0dc634",
+              "name": "Medicamento",
+              "value": "={{ $json.medicamento_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "8a36a836-fbe8-4f11-8e0c-4bb77bf4d83a",
+              "name": "Descrição",
+              "value": "={{ $json.descricao }}",
+              "type": "string"
+            },
+            {
+              "id": "36cfb48b-f925-4332-b9f6-55f2aec42689",
+              "name": "Status",
+              "value": "={{ $json.terminada ? 'Encerrado' : 'Em andamento' }}",
+              "type": "string"
+            },
+            {
+              "id": "ad91321d-be5d-4932-af9a-a5b77ac19c08",
+              "name": "Veterinário",
+              "value": "={{ $json.veterinario_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "697b9006-edb8-4f83-93ef-5a40b4e9da93",
+              "name": "Dose",
+              "value": "={{ $json.dose }}",
+              "type": "string"
+            },
+            {
+              "id": "a4e6a6c1-4822-42bc-ad0b-5993220574a7",
+              "name": "Dosagem",
+              "value": "={{ $json.dosagem }}",
+              "type": "string"
+            },
+            {
+              "id": "5787612e-9f2e-4dc6-959e-a0f1615d9d7d",
+              "name": "Horário de Início",
+              "value": "={{ $json.inicio_horario }}",
+              "type": "string"
+            },
+            {
+              "id": "40d2e41b-3064-4eff-863e-801d199d4604",
+              "name": "Intervalo",
+              "value": "={{ ($json.continuo || false) ? 'Contítuo' : ('A cada ' + $json.intervalo_horas + 'h') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        272
+      ],
+      "id": "597c89b1-90a2-4d89-88de-003657bc1746",
+      "name": "Vars Tratamentos",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "76a9eaa1-cd05-4074-a629-9488ebe57ca6",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "456fb70b-142d-4d31-990e-411127e29be3",
+              "name": "data",
+              "value": "={{ $json.criacao }}",
+              "type": "string"
+            },
+            {
+              "id": "0b60d8d7-f860-4239-8057-0cc647883917",
+              "name": "Nome",
+              "value": "={{ $json.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "c0560bfa-17ce-403e-a31e-5e5277ebe0f9",
+              "name": "url",
+              "value": "={{ $json.aquivo }}",
+              "type": "string"
+            },
+            {
+              "id": "7d212770-1f9c-41dc-af3a-acc806a5929b",
+              "name": "Observação",
+              "value": "={{ $json.observacao }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        400
+      ],
+      "id": "19f4c141-45a5-4160-88e8-d6c711cbeb07",
+      "name": "Vars Arquivos",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -112
+      ],
+      "id": "7756c80c-1811-41eb-98a7-e3c1430c4f69",
+      "name": "Pesagens"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        16
+      ],
+      "id": "ab4f831e-d37c-418d-9f8a-4e520fa8e76f",
+      "name": "Avaliacoes"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        144
+      ],
+      "id": "82810a4c-8302-4ba6-b0cf-7f0212a71d23",
+      "name": "Imunizacoes"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        272
+      ],
+      "id": "897a9247-242f-495f-b969-de89ef6c930f",
+      "name": "Tratamentos"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        400
+      ],
+      "id": "a75aa490-16d7-43ae-946a-9d6951719459",
+      "name": "Arquivos"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -240
+      ],
+      "id": "539548b6-bc9c-40d0-b9e9-aa6d958814a3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -240
+      ],
+      "id": "b9ab1b5f-9093-4221-b704-a3c50ad93f61",
+      "name": "Eventos"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -240
+      ],
+      "id": "2e727313-c114-48d3-98ab-9a9d750bf7c5",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -112
+      ],
+      "id": "6dfa1246-7d13-4f72-9279-6afc6ec48b95",
+      "name": "Sort1"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        16
+      ],
+      "id": "0ab8e0d1-4eae-4d2b-adfc-376dec9bbcd6",
+      "name": "Sort2"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        144
+      ],
+      "id": "19ba670b-9213-4b01-a464-714961e6959d",
+      "name": "Sort3"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        272
+      ],
+      "id": "0e9c206f-8535-45e6-bd0f-9278cd92491f",
+      "name": "Sort4"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        400
+      ],
+      "id": "003058fb-44a0-4e87-bede-e9a5b5ac0713",
+      "name": "Sort5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.first().json.pesagens;\n\nif (!items || items.length === 0) {\n    // Retorna uma mensagem de HTML simples caso a lista de itens esteja vazia\n    return [{ json: { html: '<div class=\"no-data-message\">Nenhum registro de pesagem encontrado.</div>' } }];\n}\n\n// Inverte a ordem dos itens para que o gráfico seja cronológico\nconst reversedItems = items.reverse();\n\n// Extrai os rótulos (datas) e os dados (pesos)\nconst labels = reversedItems.map(item => {\n    if (item.data) {\n        const [year, month, day] = item.data.split('-');\n        return `${day}/${month}/${year}`;\n    }\n    return '';\n});\n\nconst dataPoints = reversedItems.map(item => item.peso);\n\n// Gera apenas o HTML do canvas, sem o script\nconst chartHTML = `\n<div class=\"chart-container\">\n    <canvas id=\"weightChart\"></canvas>\n</div>\n`;\n\nreturn [{\n    json: {\n        html: chartHTML,\n        chartData: {\n            labels: labels,\n            dataPoints: dataPoints\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        -112
+      ],
+      "id": "c235fb2e-efde-4a04-b586-77902af10e36",
+      "name": "Graph"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json;\n\n// Verifica se a resposta contém alguma das chaves esperadas\nconst data = output.eventos ||\n             output.pesagens ||\n             output.avaliacoes ||\n             output.imunizacoes ||\n             output.tratamentos ||\n             output.arquivos;\n\n// Se não houver dados, retorna um objeto JSON com mensagem de erro\nif (!data || data.length === 0) {\n    return [{ json: { error: 'Nenhum registro encontrado.' } }];\n}\n\n// Identifica a chave principal (ex: 'pesagens', 'eventos')\nconst mainKey = Object.keys(output)[0];\nconst items = output[mainKey];\n\n// Em caso de dados vazios, retorna um objeto JSON claro\nif (!items || items.length === 0) {\n    return [{ json: { error: `Nenhum registro encontrado.` } }];\n}\n\n// Tratamento especial para pesagens, retornando também os dados do gráfico\nif (mainKey === 'pesagens') {\n    // Inverte a ordem dos itens para que o gráfico seja cronológico\n    const reversedItems = [...items].reverse();\n\n    // Monta array de objetos no formato { data, peso }\n    let chartData = reversedItems\n        .filter(item => item.data && item.peso !== null && item.peso !== undefined)\n        .map(item => ({\n            data: item.data,   // formato original YYYY-MM-DD\n            peso: item.peso\n        }));\n\n    // Adiciona ponto fictício com data atual\n    //if (chartData.length > 0) {\n    //    const today = new Date();\n    //    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD\n    //    const lastPeso = chartData[chartData.length - 1].peso;\n\n    //    chartData.push({\n    //        data: todayStr,\n    //        peso: lastPeso // mantém o último peso para \"nivelar\" a linha\n    //    });\n    //}\n\n    return [{\n        json: {\n            items: items,\n            chartData: chartData\n        }\n    }];\n}\n\n// Para todos os outros tipos de dados, retorna apenas a lista de itens\nreturn [{ json: { items: items } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        80
+      ],
+      "id": "00acff93-6c1e-4f08-ae0d-fa7d75b2ea2d",
+      "name": "Table"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json;\nconst data = output.eventos || \n              output.pesagens ||\n              output.avaliacoes ||\n              output.imunizacoes || \n              output.tratamentos ||\n              output.arquivos;\n\n//return data[0].id;\n\nif (!data || data.length === 0 || !data[0].id) {\n    // Retorna uma mensagem de HTML simples caso não haja dados\n    return [{ json: { html: '<div class=\"no-data-message\">Nenhum registro encontrado.</div>' } }];\n}\n\nconst mainKey = Object.keys(output)[0];\nconst items = output[mainKey];\n\nif (!items || items.length === 0) {\n    // Retorna uma mensagem de HTML simples caso a lista de itens esteja vazia\n    return [{ json: { html: '<div class=\"no-data-message\">Nenhum registro encontrado para esta aba.</div>' } }];\n}\n\n// Mapeamento de chaves para títulos de coluna amigáveis por tipo de dado\nconst columnMappings = {\n    'eventos': {\n        'data': 'Data',\n        'tipo': 'Tipo',\n        'descricao': 'Descrição',\n        'veterinario_nome': 'Veterinário'\n    },\n    'pesagens': {\n        'data': 'Data',\n        'peso': 'Medição',\n        'variacao': 'Variação'\n    },\n    'avaliacoes': {\n        'data': 'Data',\n        'observacao': 'Observação',\n        'veterinario_nome': 'Veterinário',\n        'temperatura': 'Temp.',\n        'score': 'Score',\n        'peso': 'Peso',\n        'nota': 'Nota'\n    },\n    'imunizacoes': {\n        'data_exibicao': 'Data',\n        'tipo': 'Tipo',\n        'nome_imunizante': 'Imunizante',\n        'veterinario_nome': 'Veterinário',\n        'aplicada': 'Aplicada'\n    },\n    'tratamentos': {\n        'data': 'Data',\n        'veterinario_nome': 'Veterinário',\n        'medicamentos': 'Medicamentos',\n        'finalizada': 'Finalizado'\n    },\n    'arquivos': {\n        'data': 'Data',\n        'nome': 'Nome',\n        'observacao': 'Observação',\n        'url': 'Visualizar'\n    }\n};\n\nconst excludedKeys = ['id', 'animal_id', 'veterinario_id', 'concluido', 'programado', 'atrasado'];\n\n// Mapeia os cabeçalhos da tabela dinamicamente com base no tipo de dado\nconst headers = Object.keys(items[0]).filter(key => !excludedKeys.includes(key));\n\n// Pega o mapeamento de colunas para o tipo de dado atual\nconst currentMapping = columnMappings[mainKey] || {};\n\nlet tableHTML = `\n<div id=\"tab-${mainKey}\" class=\"tab-content active\">\n<table class=\"tab-table\">\n    <thead>\n        <tr>\n            ${headers.map(header => {\n                const title = currentMapping[header] || header.charAt(0).toUpperCase() + header.slice(1);\n                return `<th>${title}</th>`;\n            }).join('')}\n        </tr>\n    </thead>\n    <tbody>\n        ${items.map(item => `\n            <tr>\n                ${headers.map(header => {\n                    let cellContent = item[header];\n                    let formattedContent = '';\n                    \n                    if (header === 'data' && cellContent) {\n                        const [year, month, day] = cellContent.split('-');\n                        formattedContent = `${day}/${month}/${year}`;\n                    } else if (header === 'data_exibicao' && cellContent) {\n                        const [year, month, day] = cellContent.split('-');\n                        formattedContent = `${day}/${month}/${year}`;\n                    } else if (header === 'peso' && cellContent !== null) {\n                        formattedContent = `${cellContent} kg`;\n                    } else if (header === 'medicamentos' && Array.isArray(cellContent)) {\n                        formattedContent = `<ul>${cellContent.map(med => `<li>${med}</li>`).join('')}</ul>`;\n                    } else if (header === 'url' && cellContent) {\n                        return `<td><a href=\"${cellContent}\" target=\"_blank\">Visualizar</a></td>`;\n                    } else if (typeof cellContent === 'boolean') {\n                        formattedContent = cellContent ? 'Sim' : 'Não';\n                    } else {\n                        formattedContent = cellContent || '';\n                    }\n                    \n                    return `<td>${formattedContent}</td>`;\n                }).join('')}\n            </tr>\n        `).join('')}\n    </tbody>\n</table>\n</div>\n`;\n\nreturn [{ json: { table: tableHTML } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -112
+      ],
+      "id": "8a3d80c0-7eeb-4083-86fa-ba51e02e9d6b",
+      "name": "Table1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json;\n\n// Verifica se a resposta contém alguma das chaves esperadas\nconst data = output.eventos || \n             output.pesagens ||\n             output.avaliacoes ||\n             output.imunizacoes || \n             output.tratamentos ||\n             output.arquivos;\n\n// Se não houver dados, retorna um objeto JSON com mensagem de erro\nif (!data || data.length === 0) {\n    return [{ json: { error: 'Nenhum registro encontrado.' } }];\n}\n\n// Identifica a chave principal (ex: 'pesagens', 'eventos')\nconst mainKey = Object.keys(output)[0];\nconst items = output[mainKey];\n\n// Em caso de dados vazios, retorna um objeto JSON claro\nif (!items || items.length === 0) {\n    return [{ json: { error: `Nenhum registro encontrado para esta aba.` } }];\n}\n\n// Tratamento especial para pesagens, retornando também os dados do gráfico\nif (mainKey === 'pesagens') {\n    // Inverte a ordem dos itens para que o gráfico seja cronológico\n    const reversedItems = [...items].reverse();\n\n    const labels = reversedItems.map(item => {\n        if (item.data) {\n            const [year, month, day] = item.data.split('-');\n            return `${day}/${month}/${year}`;\n        }\n        return '';\n    });\n    \n    const dataPoints = reversedItems.map(item => item.peso);\n\n    return [{\n        json: {\n            items: items,\n            chartData: {\n                labels: labels,\n                dataPoints: dataPoints\n            }\n        }\n    }];\n}\n\n// Para todos os outros tipos de dados, retorna apenas a lista de itens\nreturn [{ json: { items: items } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -112
+      ],
+      "id": "cd6dbd36-70e3-4d84-a723-0f206c59a825",
+      "name": "Table2"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "receita_view",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.animal_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        528
+      ],
+      "id": "2821e3bd-1c59-430a-81f1-42d9f00cdaa0",
+      "name": "Get Tratamentos1",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62b571f0-4d39-4c0d-aa9a-47748f4a5a54",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "79e146eb-bbbd-4516-85f4-41605c295a69",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "e8af7ddb-8664-4a28-9f53-ab8a6d65d69e",
+              "name": "veterinario_id",
+              "value": "={{ $json.veterinario }}",
+              "type": "string"
+            },
+            {
+              "id": "cb3a13a2-be62-414e-9693-c242ad26f92f",
+              "name": "veterinario_nome",
+              "value": "={{ $json.veterinario_nome }}",
+              "type": "string"
+            },
+            {
+              "id": "3767ec9d-050d-4ac2-ae73-636b0124acd0",
+              "name": "medicamentos",
+              "value": "={{ $json.medicamentos }}",
+              "type": "array"
+            },
+            {
+              "id": "2b322460-346b-456a-a5dc-239fa9cc8801",
+              "name": "finalizada",
+              "value": "={{ $json.finalizada }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        528
+      ],
+      "id": "c2f8e256-711b-4040-bd35-b7e32e2aee67",
+      "name": "Vars Tratamentos1",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('Animal').item.json.body.tab_name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        576,
+        528
+      ],
+      "id": "f7a9d189-1853-4dca-8814-1e23f90cac63",
+      "name": "Tratamentos1"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "data",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        384,
+        528
+      ],
+      "id": "6c93bcff-6683-4e6b-ac70-6ca6731c6f5e",
+      "name": "Sort6"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "headers": {
+            "host": "karah-n8n.uzd6db.easypanel.host",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+            "content-length": "70",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "pt-BR,pt;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+            "content-type": "application/json",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2BadDinmef4UaQcKk5H1L8UIQ72WGUya5w%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2B806YpW%2BVvwO3NByDJKOsX9pKcSDU2G78%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2B1FWAjUqh296TjGZcZn3ZIFKLTi8ePYbOkfS2gwdzXslmmLtf5X8BSycClFhZE93Zg2CxVpl0Xqg%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19G1Yu6PY%2FTNwjUhCPLn%2BPKo8Vt%2FOtqnMX9A0zBlKKDy7C4kuxRVlN0IwVet1isndSf%2F1t1KkkK%2B5BRzjX35bGAcrk9CD1%2FDdLbk2KQRTDcOOfV4fHVDhM7oHKO1eMQ%2BoVFh5ALTi0VoCSuv6A0Z1l1EwQUyUZ4ifE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2B1OhaIzi7tk1pvv5FgVJO1qZpuuEFO4QEAZ6tu4Kg7xN5Y0Hq9f9sqrJsw0W5RyUgtE17wlweb0JQGtDZlKcZR1lQcNdu%2FEimsu5Ak7fnBXQDiD6yjro707KfPwCYKsyM9eSRZqFzxBw%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026%2336e98418-cb69-4c27-b2c6-02d98ffe06fd%22%2C%22%24sesid%22%3A%5B1758486810654%2C%2201996df9-d7be-7ddd-b2a4-b73388b7e247%22%2C1758486714302%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fkarah-n8n.uzd6db.easypanel.host%2Fsignin%3Fredirect%3D%25252Fprojects%25252FmEBLDicwiND3aElR%25252Fworkflows%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2BYxaXx1KlR0jgwYQhnmPwTvSXTGebwvZvKkuRooYVFZIVD%2FW7hw7K6Nm8WbkqS8LlC8GbsdnfrO%2Bvw7skXcHWbdvJGf%2FUizHA9FJ9TUE%2BMpfG8T3sD7zodh48ilYA6ukkw%2BSUEcMZvcw%3D%3D",
+            "origin": "https://karah-n8n.uzd6db.easypanel.host",
+            "referer": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu?animal_id=2799af43-94e7-4cf1-8e2c-00e2ec22601a",
+            "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Microsoft Edge\";v=\"140\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-forwarded-for": "164.85.104.33, 163.116.233.74",
+            "x-forwarded-host": "karah-n8n.uzd6db.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "9a520392bf62",
+            "x-real-ip": "163.116.233.74"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "tipo": "tratamentos",
+            "animal_id": "2799af43-94e7-4cf1-8e2c-00e2ec22601a"
+          },
+          "webhookUrl": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Animal": [
+      {
+        "json": {
+          "headers": {
+            "host": "karah-n8n.uzd6db.easypanel.host",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+            "content-length": "77",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "pt-BR,pt;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+            "content-type": "application/json",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2BadDinmef4UaQcKk5H1L8UIQ72WGUya5w%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX1%2B806YpW%2BVvwO3NByDJKOsX9pKcSDU2G78%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2Bnn0WrND4z8%2FP%2FQ%2Fd2qNPocEHenfNmbMvlRuZHBMyd637MlnE%2FLNxXrDbwD2ykZf%2BOgSk%2BHNpkCQ%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BhxapOQGCTk2ZlF5KPBFP38mp4LdHU%2BmQn6r5EFxIxb9gPgJjUBR8DYa4MqQDKZCJhKukZ%2B4Eic1mwLe2tHbWeEhQoaiCV8jW9BUrD7I3ioN5BhcvFPovPzFVyPLy5jxVkz6B4QMVK5oLAnYmDhUI2JBK%2FON27WUM%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BeENLbaMArIk8VTGjWQl7xRjj0iFDksxmNKCIBWG51f%2BAGtNeVz2f4zYpHsWWbBqYG0uk6pT1zgMQIGz9at4yWhk1KS3t2%2Bsne55LLWDEcDlab%2Fa%2F40G%2FjXtPP7Bf7koQvBH7TIFz%2FOA%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026%2336e98418-cb69-4c27-b2c6-02d98ffe06fd%22%2C%22%24sesid%22%3A%5B1758597041197%2C%2201997485-a63f-75b6-9e5d-da3d8ba2b84e%22%2C1758596539967%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fkarah-n8n.uzd6db.easypanel.host%2Fsignin%3Fredirect%3D%25252Fprojects%25252FmEBLDicwiND3aElR%25252Fworkflows%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B0UCt6OAFf4c3YG3TOdZOTE7owK0pTjl7BWw1qJJtq2Li4qY2t8bxNZDldYnp%2BF%2B4rrQ3ubPlcMlBa5YZvrzE%2F79OLv8R8kBacbN8jYpTlYeu7lWa%2BvpfYMuZ0NPuzU7I%2FtEajW6KIJQ%3D%3D",
+            "origin": "https://karah-n8n.uzd6db.easypanel.host",
+            "referer": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu?animal_id=7f256d59-9c17-4339-95cf-cfafdfed5844",
+            "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Microsoft Edge\";v=\"140\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-forwarded-for": "164.85.104.33, 163.116.233.34",
+            "x-forwarded-host": "karah-n8n.uzd6db.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "9a520392bf62",
+            "x-real-ip": "163.116.233.34"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "tab_name": "imunizacoes",
+            "animal_id": "7f256d59-9c17-4339-95cf-cfafdfed5844"
+          },
+          "webhookUrl": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Animal": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Eventos": {
+      "main": [
+        [
+          {
+            "node": "Vars Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pesagens": {
+      "main": [
+        [
+          {
+            "node": "Vars Pesagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Avaliacoes": {
+      "main": [
+        [
+          {
+            "node": "Vars Avaliacoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Imunizacoes": {
+      "main": [
+        [
+          {
+            "node": "Vars Imunizacoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tratamentos": {
+      "main": [
+        [
+          {
+            "node": "Vars Tratamentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Arquivos": {
+      "main": [
+        [
+          {
+            "node": "Vars Arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Pesagens",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Avaliacoes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Imunizacoes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Tratamentos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Eventos": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Pesagens": {
+      "main": [
+        [
+          {
+            "node": "Sort1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Avaliacoes": {
+      "main": [
+        [
+          {
+            "node": "Sort2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Imunizacoes": {
+      "main": [
+        [
+          {
+            "node": "Sort3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Tratamentos": {
+      "main": [
+        [
+          {
+            "node": "Sort4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Arquivos": {
+      "main": [
+        [
+          {
+            "node": "Sort5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pesagens": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avaliacoes": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imunizacoes": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratamentos": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arquivos": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Eventos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Pesagens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Avaliacoes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Imunizacoes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Tratamentos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eventos": {
+      "main": [
+        [
+          {
+            "node": "Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort1": {
+      "main": [
+        [
+          {
+            "node": "Pesagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort2": {
+      "main": [
+        [
+          {
+            "node": "Avaliacoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort3": {
+      "main": [
+        [
+          {
+            "node": "Imunizacoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort4": {
+      "main": [
+        [
+          {
+            "node": "Tratamentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort5": {
+      "main": [
+        [
+          {
+            "node": "Arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Table": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Graph": {
+      "main": [
+        []
+      ]
+    },
+    "Get Tratamentos1": {
+      "main": [
+        [
+          {
+            "node": "Vars Tratamentos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vars Tratamentos1": {
+      "main": [
+        [
+          {
+            "node": "Sort6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort6": {
+      "main": [
+        [
+          {
+            "node": "Tratamentos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b42e1cb5-a733-41c7-8e56-f7afc0bd0086",
+  "meta": {
+    "instanceId": "c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026"
+  },
+  "id": "hjQzZO0sU1D5IbXE",
+  "tags": []
+}
