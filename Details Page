@@ -1,955 +1,593 @@
-/*
- * Kaniu
- * Sistema de gestão de abrigos de animais
- * Gestão do animal
- */
-
-// Variáveis de trabalho
-const animal = $('Get Details').first().json;
-const especies = JSON.stringify($('Tables').first().json.especies);
-const racas = JSON.stringify($('Tables').first().json.racas);
-const generos = JSON.stringify($('Tables').first().json.generos);
-const portes = JSON.stringify($('Tables').first().json.portes);
-const cores = JSON.stringify($('Tables').first().json.cores);
-const pelagens = JSON.stringify($('Tables').first().json.pelagens);
-const icones = $('Icons').first().json;
-
-const app_url = $('Kaniu').first().json.webhookUrl.split('webhook/')[1];
-const img_logo = $('Constants').item.json.img_logo;
-
-// Códogo para obter o arquivo de estilo
-const estilo = $('Estilo').first().json;
-
-// Função para converter boolean para "Sim" ou "Não"
-const formatBoolean = (value) => value ? 'Sim' : 'Não';
-
-// Função para checar por valores nulos ou 0
-const formatValue = (value) => value === null || value === 0 || value === undefined ? '' : value;
-
-// Função para calcular idade completa em anos, meses e dias
-const calculateAge = (birthDate) => {
-    const today = new Date();
-    const dob = new Date(birthDate);
-
-    let years = today.getFullYear() - dob.getFullYear();
-    let months = today.getMonth() - dob.getMonth();
-    let days = today.getDate() - dob.getDate();
-
-    if (days < 0) {
-        months--;
-        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        days = today.getDate() + (prevMonth.getDate() - dob.getDate());
-    }
-
-    if (months < 0) {
-        years--;
-        months = 12 + months;
-    }
-
-    let txt_anos = years == 0 ? '' : years == 1 ? '1 ano' : years + ' anos';
-    let txt_meses = months == 0 ? '' : months == 1 ? '1 mês' : months + ' meses';
-    let txt_e = (txt_anos == '' || txt_meses == '') ? '' : ' e ';
-
-    return txt_anos+txt_e+txt_meses;
-};
-
-// Calcula a idade do animal
-const ageString = calculateAge(animal.nascimento);
-
-// Função para retornar um ícone
-function getIcon(icon_name) {
-    return '<i class="fa-solid fa-' + icones[icon_name] + '"></i>';
-}
-
-// Função para gerar o HTML dos ícones com base nas propriedades do animal
-function animalStatusIcons(animal) {
-    let iconsHtml = '';
-
-    // Verifica se o animal está castrado e adiciona o ícone se for verdade
-    if (animal.castrado) {
-        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-scissors"></i><span class="tooltip">Castrado</span></div>';
-    }
-
-    // Verifica se o animal está vacinado
-    if (animal.vacinado) {
-        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-syringe"></i><span class="tooltip">Vacinado</span></div>';
-    }
-
-    // Verifica se o animal está vermifugado
-    if (animal.vermifugado) {
-        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-pills"></i><span class="tooltip">Vermifugado</span></div>';
-    }
-
-    // Verifica se o animal está desparasitado
-    if (animal.desparasitado) {
-        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-bug-slash"></i><span class="tooltip">Desparasitado</span></div>';
-    }
-
-    return iconsHtml;
-}
-
-// Gera o html dos ícones indicando o status do animall
-const iconesAnimal = animalStatusIcons(animal);
-
-// =========================================================================
-// O CÓDIGO DO N8N TERMINA AQUI. A PARTIR DAQUI VEM O HTML E O JAVASCRIPT
-// QUE SERÃO EXECUTADOS NO NAVEGADOR.
-// =========================================================================
-
-// Gera o html principal da página
-const html = `
-<!DOCTYPE html>
-<html lang="pt-br">
-
-${estilo.style}
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-<script src="https://kit.fontawesome.com/78b7eb0968.js" crossorigin="anonymous"></script>
-
-<script>
-    const cachedData = {};
-    
-    // =========================================================================
-    // FUNÇÕES DE LÓGICA DO POP-UP DE PESAGEM (AS FUNÇÕES DE ABRIR E CLIQUE FORAM REMOVIDAS/SIMPLIFICADAS)
-    // =========================================================================
-
-    // Função de tratamento do clique na linha da tabela.
-    // É esperado que a linha tenha o atributo data-record com o JSON do item.
-    function handlePesagemClick(rowElement) {
-        // 1. Obtém a string JSON com as entidades &quot;
-        const itemDataString = rowElement.getAttribute('data-record');
-        
-        // 2. Substitui as entidades &quot; pelas aspas duplas reais (")
-        const safeJsonString = itemDataString.replace(/&quot;/g, '"');
-        
-        // 3. Faz o parse da string JSON para um objeto
-        const record = JSON.parse(safeJsonString);
-        
-        // 4. Abre o pop-up com o registro
-        openPesagemPopup(record);
-    }
-
-    // Função para fechar o pop-up da pesagem
-    function closePesagemPopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('pop-up-pesagem').style.display = 'none';
-        // Limpa a mensagem de erro
-        const errorElement = document.getElementById('pop-up-pesagem').querySelector('.error-message-pesagem');
-        if (errorElement) {
-            errorElement.remove();
-        }
-    }
-
-    // Função para abrir o popup de pesagem (novo ou editar)
-    function openPesagemPopup(record = null) {
-        if (record) {
-            // Edição
-            document.getElementById('pesagem-id').value = record.id;
-            document.getElementById('pesagem-data-input').value = record.data;
-            document.getElementById('pesagem-peso-input').value = record.peso;
-        } else {
-          // Novo registro
-          document.getElementById('pesagem-id').value = "";
-          const today = new Date().toISOString().split('T')[0]; // pega AAAA-MM-DD
-          document.getElementById('pesagem-data-input').value = today;
-          document.getElementById('pesagem-peso-input').value = "";
-        }
-    
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('pop-up-pesagem').style.display = 'flex';
-    }
-    
-    // Função para salvar (update ou insert)
-    async function updatePesagemRecord() {
-        const id = document.getElementById('pesagem-id').value;
-        const data = document.getElementById('pesagem-data-input').value;
-        const peso = document.getElementById('pesagem-peso-input').value;
-    
-        const popup = document.getElementById('pop-up-pesagem');
-        const popupActions = popup.querySelector('.pop-up-actions');
-    
-        if (!data || !peso || isNaN(parseFloat(peso))) {
-            const errorElement = popup.querySelector('.error-message-pesagem');
-            if (errorElement) errorElement.remove();
-            popupActions.insertAdjacentHTML(
-                'beforebegin',
-                '<p class="error-message-pesagem" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">Preencha todos os campos corretamente.</p>'
-            );
-            return;
-        }
-    
-        try {
-            let payload = {
-                animal_id: '${animal.animal_id}',
-                data: data,
-                peso: parseFloat(peso)
-            };
-    
-            let url = "";
-            if (id) {
-                // atualização
-                payload.tipo_registro = "pesagem";
-                payload.id_registro = id;
-                url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update";
-            } else {
-                // inclusão
-                url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-add-pesagem";
-            }
-    
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-    
-            if (!response.ok) {
-                throw new Error("Falha ao salvar o registro de pesagem.");
-            }
-    
-            showAlert(id ? "Pesagem atualizada com sucesso!" : "Pesagem incluída com sucesso!", "success", 2000);
-    
-            cachedData['pesagens'] = null;
-            await fetchTabData('pesagens');
-    
-        } catch (error) {
-            showAlert("Erro ao salvar a pesagem: " + error.message, "error", 3000);
-        } finally {
-            closePesagemPopup();
-        }
-    }
-
-    
-    // =========================================================================
-
-    async function fetchTabData(tabId) {
-        if (cachedData[tabId]) {
-            return;
-        }
-
-        const tabContentElement = document.getElementById('tab-' + tabId);
-        //tabContentElement.innerHTML = '<div class="loading-message">Carregando...</div>'; //teste
-
-        try {
-            const payload = {
-                tab_name: tabId,
-                animal_id: '${animal.animal_id}'
-            };
-
-            const response = await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+{
+    "name": "Kaniu Site Admin - Beta",
+        "nodes": [
+            {
+                "parameters": {
+                    "path": "kaniu-beta",
+                    "responseMode": "responseNode",
+                    "options": {}
                 },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro na resposta da rede: ' + response.statusText);
-            }
-
-            const data = await response.json();
-
-            // Trata a resposta do endpoint que agora retorna JSON com 'items' ou 'error'
-            if (data.error) {
-                tabContentElement.innerHTML = '<div class="no-data-message">' + data.error + '</div>';
-
-            } else if (tabId !== 'resumo' && (data.items.length == 0 || data.items[0].id == null)) {
-                tabContentElement.innerHTML = '<div class="no-data-message">Nenhum item encontrado.</div>';
-
-            } else if (data.items) {
-
-                // Mapeamento de chaves para títulos de coluna amigáveis
-                const columnMappings = {
-                    'eventos': {
-                        'data': 'Data',
-                        'tipo': 'Tipo',
-                        'descricao': 'Descrição',
-                        'veterinario_nome': 'Veterinário'
-                    },
-                    'pesagens': {
-                        'data': 'Data',
-                        'peso': 'Medição',
-                        'variacao': 'Variação'
-                    },
-                    'avaliacoes': {
-                        'data': 'Data',
-                        'observacao': 'Observação',
-                        'veterinario_nome': 'Veterinário',
-                        'temperatura': 'Temp.',
-                        'score': 'Score',
-                        'peso': 'Peso',
-                        'nota': 'Nota'
-                    },
-                    'imunizacoes': {
-                        'data_exibicao': 'Data',
-                        'tipo': 'Tipo',
-                        'nome_imunizante': 'Imunizante',
-                        'veterinario_nome': 'Veterinário',
-                        'aplicada': 'Aplicada'
-                    },
-                    'tratamentos': {
-                        'data': 'Data',
-                        'veterinario_nome': 'Veterinário',
-                        'medicamentos': 'Medicamentos',
-                        'finalizada': 'Finalizado'
-                    },
-                    'arquivos': {
-                        'data': 'Data',
-                        'nome': 'Nome',
-                        'observacao': 'Observação',
-                        'url': 'Visualizar'
-                    }
-                };
-
-                const excludedKeys = ['id', 'animal_id', 'veterinario_id', 'concluido', 'programado', 'atrasado'];
-
-                // Função para renderizar a tabela
-                const renderTable = (items, tabId) => {
-                    const currentMapping = columnMappings[tabId] || {};
-                    const headers = Object.keys(items[0]).filter(key => !excludedKeys.includes(key));
-
-                    let tableHTML = '<table class="tab-table"><thead><tr>';
-
-                    headers.forEach(header => {
-                        const title = currentMapping[header] || header.charAt(0).toUpperCase() + header.slice(1);
-                        tableHTML += '<th>' + title + '</th>';
-                    });
-
-                    tableHTML += '</tr></thead><tbody>';
-
-                    items.forEach(item => {
-                        let rowAttributes = '';
-                        // MODIFICADO: Torna a linha clicável na aba de pesagens
-                        if (tabId === 'pesagens') {
-                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
-                            rowAttributes = 'data-record="'+safeJson+'" onclick="handlePesagemClick(this)" style="cursor:pointer;"';
-                        }
-                        tableHTML += '<tr '+rowAttributes+'>';
-                        headers.forEach(header => {
-                            let formattedContent = '';
-                            const cellContent = item[header];
-
-                            if (['data', 'data_exibicao'].includes(header) && cellContent) {
-                                const [year, month, day] = cellContent.split('-');
-                                formattedContent = day + '/' + month + '/' + year;
-                            } else if (header === 'peso' && cellContent !== null) {
-                                formattedContent = cellContent + ' kg';
-                            } else if (header === 'medicamentos' && Array.isArray(cellContent)) {
-                                formattedContent = '<ul>' + cellContent.map(med => '<li>' + med + '</li>').join('') + '</ul>';
-                            } else if (header === 'url' && cellContent) {
-                                formattedContent = '<a href="' + cellContent + '" target="_blank">Visualizar</a>';
-                            } else if (typeof cellContent === 'boolean') {
-                                formattedContent = cellContent ? 'Sim' : 'Não';
-                            } else {
-                                formattedContent = cellContent || '';
-                            }
-                            tableHTML += '<td>' + formattedContent + '</td>';
-                        });
-                        tableHTML += '</tr>';
-                    });
-
-                    tableHTML += '</tbody></table>';
-                    return tableHTML;
-                };
-
-                if (tabId == 'resumo') {
-                    renderizarResumo(data.items);
-                } else {
-                    // botão fixo no topo direito (exceto resumo)
-                    const ap = "'";
-                    const newButtonHTML = '<div class="new-button-fixed"><button class="action-button" onclick="handleNewRecord('+ap+tabId+ap+')">Novo</button></div>';
-                
-                    tabContentElement.innerHTML = newButtonHTML + renderTable(data.items, tabId);
-                }
-
-                // Se for a guia de pesagens, renderiza o gráfico
-                if (tabId === 'pesagens' && data.chartData) {
-                    tabContentElement.innerHTML += '<div class="chart-container"><canvas id="weightChart"></canvas></div>';
-                    renderChart(data.chartData);
-                }
-
-                cachedData[tabId] = true;
-            }
-
-        } catch (error) {
-            tabContentElement.innerHTML = '<div class="error-message">Ocorreu um erro ao carregar os dados.</div>';
-        }
-
-    }
-
-    function renderChart(chartData) {
-        // Converte dados do backend em pontos {x,y}
-        const dataPoints = chartData.map(item => ({
-            x: new Date(item.data),
-            y: item.peso
-        }));
-
-        const maxWeight = Math.max(...dataPoints.map(p => p.y));
-        const maxYValue = Math.ceil(maxWeight / 10) * 10;
-
-        const ctx = document.getElementById('weightChart').getContext('2d');
-
-        // pega primeira e última data reais do dataset
-        const dates = chartData.map(item => new Date(item.data));
-        const minDate = new Date(Math.min(...dates));
-        const today = new Date();
-
-        // adiciona margem de 15 dias antes da primeira data
-        const paddedMinDate = new Date(minDate);
-        paddedMinDate.setDate(minDate.getDate() - 15);
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: 'Peso',
-                    data: dataPoints,
-                    borderColor: '#4A90E2',
-                    backgroundColor: 'rgba(74, 144, 226, 0.2)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 3
-                }]
+                "type": "n8n-nodes-base.webhook",
+                "typeVersion": 2,
+                "position": [
+                    -880,
+                    0
+                ],
+                "id": "b6ec4ec9-88c9-4cfd-8a83-8c062df707ad",
+                "name": "Kaniu",
+                "webhookId": "bc6c9313-2873-4537-96d8-3bb31cdff407"
             },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'month',
-                            displayFormats: {
-                                month: 'MMM yy' // Exibe Jan 23, Fev 23, etc.
-                            }
-                        },
-                        ticks: {
-                            callback: function(value, index, ticks) {
-                                const date = new Date(value);
-                                // Verifica se é o primeiro mês do ano (Janeiro, que é o mês 0)
-                                if (date.getMonth() === 0) {
-                                    return date.getFullYear(); // Exibe o ano completo
-                                } else {
-                                    // Retorna a primeira letra do mês
-                                    const month = date.toLocaleString('pt-BR', {
-                                        month: 'short'
-                                    });
-                                    return month.charAt(0).toUpperCase();
-                                }
+            {
+                "parameters": {
+                    "operation": "getAll",
+                    "tableId": "_n8n_animais_dados",
+                    "returnAll": true,
+                    "matchType": "allFilters",
+                    "filters": {
+                        "conditions": [
+                            {
+                                "keyName": "canil",
+                                "condition": "eq",
+                                "keyValue": "1"
                             },
-                            autoSkip: true,
-                            maxRotation: 0,
-                            minRotation: 0
-                        },
-                        min: paddedMinDate,
-                        max: today,
-                        grid: {
-                            drawTicks: true
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: maxYValue
+                            {
+                                "keyName": "especie",
+                                "condition": "like",
+                                "keyValue": "={{ $('Kaniu').item.json.query?.especie || '*' }}"
+                            },
+                            {
+                                "keyName": "sexo",
+                                "condition": "like",
+                                "keyValue": "={{ $('Kaniu').item.json.query?.sexo || '*' }}"
+                            },
+                            {
+                                "keyName": "porte",
+                                "condition": "like",
+                                "keyValue": "={{ $('Kaniu').item.json.query?.porte || '*' }}"
+                            },
+                            {
+                                "keyName": "faixa_etaria",
+                                "condition": "like",
+                                "keyValue": "={{ $('Kaniu').item.json.query?.idade || '*' }}"
+                            },
+                            {
+                                "keyName": "status",
+                                "condition": "like",
+                                "keyValue": "={{ $('Kaniu').item.json.query?.status || $json.status.first() }}"
+                            }
+                        ]
                     }
                 },
-                plugins: {
-                    legend: {
-                        display: false
+                "type": "n8n-nodes-base.supabase",
+                "typeVersion": 1,
+                "position": [
+                    448,
+                    -128
+                ],
+                "id": "5a5a5e01-216c-4cc0-82f6-380ef774db8e",
+                "name": "Get Animals",
+                "notesInFlow": true,
+                "alwaysOutputData": true,
+                "credentials": {
+                    "supabaseApi": {
+                        "id": "vfFMnH1cZndqgot0",
+                        "name": "Viralatinhaz Supabase"
                     }
                 }
-            }
-        });
-    }
-
-    function handleNewRecord(tabId) {
-        if (tabId === 'pesagens') {
-            openPesagemPopup();
-        } else {
-            // Pode expandir para imunizações, tratamentos etc.
-            showAlert('Abrindo formulário de novo registro em: ' + tabId, 'info', 2500);
-        }
-    }
-
-
-    // Funções para inicializar o sistema de guias, pop-ups e outras funcionalidades
-    function initTabs() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.getAttribute('data-tab');
-
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-
-                button.classList.add('active');
-                document.getElementById('tab-' + tabId).classList.add('active');
-
-                fetchTabData(tabId);
-            });
-        });
-    }
-
-    let currentButton = null;
-    let currentType = null;
-
-    function openMenu(data, button, type, labelKey) {
-        currentButton = button;
-        currentType = type;
-
-        const menu = document.getElementById('pop-up-menu');
-        const overlay = document.getElementById('overlay');
-        const optionsContainer = document.getElementById('pop-up-options-container');
-
-        menu.querySelector('h2').textContent = "Selecione " + type.charAt(0).toUpperCase() + type.slice(1);
-
-        optionsContainer.innerHTML = '';
-        data.forEach(item => {
-            const option = document.createElement('div');
-            option.classList.add('pop-up-option');
-            option.textContent = item[labelKey];
-            option.setAttribute('data-id', item.id);
-
-            option.onclick = () => selectOption('${animal.animal_id}', item.id, item[labelKey]);
-            optionsContainer.appendChild(option);
-        });
-
-        overlay.style.display = 'block';
-        menu.style.display = 'flex';
-    }
-
-    function closeMenu() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('pop-up-menu').style.display = 'none';
-    }
-
-    function selectOption(idAnimal, valueId, valueText) {
-        if (currentButton && currentType) {
-            updateCharacteristic(idAnimal, currentType, valueId, valueText);
-        }
-        closeMenu();
-    }
-
-    async function updateCharacteristic(animalId, type, valueId, valueText) {
-        try {
-            let payload = {
-                animal_id: animalId,
-                caracteristica: type,
-                caracteristica_id: valueId,
-                caracteristica_label: valueText
-            };
-            await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-
-            currentButton.textContent = valueText;
-            showAlert('Item salvo com sucesso.');
-        } catch (error) {
-            showAlert('Erro ao atualizar: ' + type + ' - ', error);
-        }
-    }
-
-    function initDatePopup() {
-        const nascimentoButton = document.getElementById("open-nascimento-menu");
-        const nascimentoPopup = document.getElementById("pop-up-nascimento");
-        const nascimentoInput = document.getElementById("nascimento-input");
-        const confirmNascimento = document.getElementById("confirm-nascimento");
-        const cancelNascimento = document.getElementById("cancel-nascimento");
-        const overlay = document.getElementById("overlay");
-        const popupActions = nascimentoPopup.querySelector('.pop-up-actions');
-
-        nascimentoButton.onclick = function() {
-            if (nascimentoButton.textContent !== "Definir Data") {
-                nascimentoInput.value = nascimentoButton.textContent;
-            } else {
-                nascimentoInput.value = "";
-            }
-            // Limpa a mensagem de erro ao abrir
-            clearErrorMessage(); 
-            overlay.style.display = "block";
-            nascimentoPopup.style.display = "flex";
-        };
-        
-        function clearErrorMessage() {
-            const errorElement = nascimentoPopup.querySelector('.error-message-nascimento');
-            if (errorElement) {
-                errorElement.remove();
-            }
-        }
-
-        function showErrorMessage(message) {
-            clearErrorMessage();
-            popupActions.insertAdjacentHTML('beforebegin', '<p class="error-message-nascimento" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">' + message + '</p>');
-        }
-
-        function closeNascimentoPopup() {
-            clearErrorMessage();
-            overlay.style.display = "none";
-            nascimentoPopup.style.display = "none";
-        }
-
-        cancelNascimento.onclick = closeNascimentoPopup;
-
-        confirmNascimento.onclick = async function() {
-            const novaData = nascimentoInput.value;
-            if (!novaData) {
-                showErrorMessage('Selecione uma data válida.');
-                return;
-            }
-
-            try {
-                await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
+            },
+            {
+                "parameters": {
+                    "conditions": {
+                        "options": {
+                            "caseSensitive": true,
+                            "leftValue": "",
+                            "typeValidation": "strict",
+                            "version": 2
+                        },
+                        "conditions": [
+                            {
+                                "id": "269a87fc-9513-49ae-9721-d59ad4eb1902",
+                                "leftValue": "={{ $('Kaniu').item.json.query.animal_id.isEmpty() }}",
+                                "rightValue": "",
+                                "operator": {
+                                    "type": "boolean",
+                                    "operation": "true",
+                                    "singleValue": true
+                                }
+                            }
+                        ],
+                        "combinator": "and"
                     },
-                    body: JSON.stringify({
-                        animal_id: '${animal.animal_id}',
-                        caracteristica: "nascimento",
-                        data_nascimento: novaData
-                    })
-                });
-
-                nascimentoButton.textContent = novaData;
-                showAlert("Data de nascimento atualizada com sucesso!");
-            } catch (error) {
-                showAlert("Erro ao atualizar data de nascimento:", error);
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.if",
+                "typeVersion": 2.2,
+                "position": [
+                    -16,
+                    0
+                ],
+                "id": "7c346132-0dd1-4915-9719-7a4714b41ae2",
+                "name": "List Animals"
+            },
+            {
+                "parameters": {
+                    "operation": "get",
+                    "tableId": "_n8n_animais_dados",
+                    "filters": {
+                        "conditions": [
+                            {
+                                "keyName": "animal_id",
+                                "keyValue": "={{ \n  $('Kaniu').item.json.query?.animal_id\n}}"
+                            }
+                        ]
+                    }
+                },
+                "type": "n8n-nodes-base.supabase",
+                "typeVersion": 1,
+                "position": [
+                    448,
+                    128
+                ],
+                "id": "2856fa1d-a6d7-4229-bb33-73df2036c53d",
+                "name": "Get Details",
+                "notesInFlow": true,
+                "credentials": {
+                    "supabaseApi": {
+                        "id": "vfFMnH1cZndqgot0",
+                        "name": "Viralatinhaz Supabase"
+                    }
+                }
+            },
+            {
+                "parameters": {
+                    "respondWith": "text",
+                    "responseBody": "={{ $json.html }}",
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.respondToWebhook",
+                "typeVersion": 1.2,
+                "position": [
+                    1600,
+                    -16
+                ],
+                "id": "da1437b8-f89a-4c42-961e-5a77313b6f6b",
+                "name": "Respond"
+            },
+            {
+                "parameters": {
+                    "sortFieldsUi": {
+                        "sortField": [
+                            {
+                                "fieldName": "nome"
+                            }
+                        ]
+                    },
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.sort",
+                "typeVersion": 1,
+                "position": [
+                    880,
+                    -32
+                ],
+                "id": "a7a72991-30a9-4896-a429-8f5c0d96a071",
+                "name": "Sort",
+                "alwaysOutputData": false
+            },
+            {
+                "parameters": {
+                    "conditions": {
+                        "options": {
+                            "caseSensitive": true,
+                            "leftValue": "",
+                            "typeValidation": "strict",
+                            "version": 2
+                        },
+                        "conditions": [
+                            {
+                                "id": "fbd341f6-d387-4a05-b02c-be40b9e12524",
+                                "leftValue": "={{ $json }}",
+                                "rightValue": 0,
+                                "operator": {
+                                    "type": "object",
+                                    "operation": "empty",
+                                    "singleValue": true
+                                }
+                            }
+                        ],
+                        "combinator": "and"
+                    },
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.if",
+                "typeVersion": 2.2,
+                "position": [
+                    656,
+                    -128
+                ],
+                "id": "e567b97a-bdaa-4de8-80cf-b9792e7a1d93",
+                "name": "Empty"
+            },
+            {
+                "parameters": {
+                    "aggregate": "aggregateAllItemData",
+                    "destinationFieldName": "animals",
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.aggregate",
+                "typeVersion": 1,
+                "position": [
+                    1104,
+                    -32
+                ],
+                "id": "bca4dd87-45f8-4fd7-9d93-a6f0d25797cb",
+                "name": "Combine"
+            },
+            {
+                "parameters": {
+                    "jsCode": "const animals = $input.first().json.animals;\nconst img_logo = $('Constants').item.json.img_logo;\nconst fav_icon = $('Constants').item.json.fav_icon;\nconst dog_font= $('Constants').item.json.dog_font;\nconst webhook_url = $('Kaniu').first().json.webhookUrl;\n\nconst APPLIED_STATUS = ( $('Kaniu').item.json.query.status || 'Abrigado');\n\nconst getIcon = (key) => icones?.[0]?.[key]?.value ?? null;\n\nlet cardsHtml = '';\n\n// Função para remover acentos de uma string\nfunction normalizeAccents(str) {\n    if (!str) return '';\n    return str.normalize('NFD').replace(/[\\u0300-\\u036f]/g, \"\");\n}\n\nif (animals && Array.isArray(animals) && animals.length > 0) {\n    cardsHtml = animals.map(animal => {\n        // Normaliza o nome do animal para remover acentos\n        const normalizedName = normalizeAccents(animal.nome);\n\n        // Exibe os dados, exceto album, canil e animal_id\n        return `\n            <a href=\"${webhook_url}?animal_id=${animal.animal_id}\" class=\"animal-list-link\">\n                <div class=\"animal-strip\">\n                    <div class=\"animal-photo-list-container\">\n                        <img class=\"animal-photo-list\" src=\"${animal.foto}\" alt=\"Foto de ${normalizedName}\"/>\n                    </div>\n                    <div class=\"list-content\">\n                        <h3>${normalizedName}</h3>\n                        <div class=\"characteristics-container\">\n                            <span class=\"characteristic-box\">${animal.especie}</span>\n                            <span class=\"characteristic-box\">${animal.sexo}</span>\n                            <span class=\"characteristic-box\">${animal.faixa_etaria}</span>\n                            <span class=\"characteristic-box\">${animal.porte}</span>\n                        </div>\n                    </div>\n                </div>\n            </a>\n        `;\n    }).join('');\n} else {\n    cardsHtml = '<p class=\"text-red-500 text-center\">Nenhum animal encontrado para adoção no momento.</p>';\n}\n\nconst html = `\n    <!DOCTYPE html>\n    <html lang=\"pt-br\">\n    <head>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n          \n        <!-- Favicon padrão (ícone na aba do navegador) -->\n        <link rel=\"icon\" type=\"image/png\" href=\"${fav_icon}\">\n\n        <title>Animais para Adoção</title>\n        <style>\n            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');\n            \n            @font-face {\n                font-family: 'GoodDog';\n                src: url('${dog_font}') format('truetype');\n                font-weight: normal;\n                font-style: normal;\n            }\n            \n            :root {\n                --primary-color: #5A5D7F;\n                --secondary-color: #ff6600;\n                --background-light: #F4F6F9;\n                --card-background: #FFFFFF;\n                --text-dark: #333333;\n                --text-light: #666666;\n            }\n\n            body {\n                font-family: 'Poppins', sans-serif;\n                margin: 0;\n                padding-top: 120px; /* 60px header + 60px filtro */\n                background-color: var(--background-light);\n                color: var(--text-dark);\n            }\n            \n            .header {\n                width: 100%;\n                height: 60px; /* define altura fixa */\n                padding: 10px 20px;\n                background-color: var(--card-background);\n                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* sombra mais suave */\n                display: flex;\n                align-items: center;\n                box-sizing: border-box;\n                flex-shrink: 0;\n            \n                position: fixed;\n                top: 0;\n                left: 0;\n                z-index: 1000;\n            }\n            \n            .header-content {\n                display: flex;\n                align-items: center;\n                gap: 10px;\n                width: 100%;\n            }\n            \n            .header-logo {\n                height: 32px;\n                //width: 40px;\n            }\n            \n            .header-title {\n                font-family: 'GoodDog', sans-serif;\n                font-size: 1.8rem;\n                color: var(--primary-color);\n                margin: 0;\n            }\n            \n            .filter-container {\n                display: flex;\n                flex-wrap: wrap;\n                gap: 10px;\n                align-items: center;\n            }\n            \n            .status-filter-btn {\n                cursor: pointer;\n                background-color: #f0f2f5;\n                color: var(--text-dark);\n                padding: 8px 16px;\n                border-radius: 8px;\n                font-size: 0.9rem;\n                font-weight: 500;\n                border: none;\n                transition: background-color 0.2s ease, color 0.2s ease;\n            }\n            \n            .status-filter-btn:hover {\n                background-color: #e2e4e7;\n            }\n            \n            .status-filter-btn.active {\n                background-color: var(--primary-color);\n                color: #FFFFFF;\n            }\n            \n            .filter-container {\n                position: fixed;\n                top: 60px; /* exatamente igual à altura do header */\n                left: 0;\n                width: 100%;\n                background-color: var(--background-light); /* mesma cor do fundo */\n                display: flex;\n                flex-wrap: wrap;\n                justify-content: center;\n                align-items: center;\n                gap: 5px;\n                padding: 10px;\n                z-index: 999;\n                box-shadow: none; /* nenhuma sombra separando */\n                margin: 0;\n                border-top: none;\n            }\n            \n            .status-filter-btn {\n                cursor: pointer;\n                background-color: #f0f2f5;\n                color: var(--text-dark);\n                padding: 8px 16px; /* Aumentei o padding */\n                border-radius: 8px;\n                font-size: 0.9rem; /* Aumentei a fonte */\n                font-weight: 500;\n                border: none;\n                transition: background-color 0.2s ease, color 0.2s ease;\n            }\n            .status-filter-btn:hover {\n                background-color: #e2e4e7;\n            }\n            .status-filter-btn.active {\n                background-color: var(--primary-color);\n                color: #FFFFFF;\n            }\n            .main-container {\n              max-width: 1400px;\n              width: 95%;\n              margin: 0 auto 50px; /* antes era 0 auto */\n              padding: 10px;\n            }\n            .list-container {\n              display: grid;\n                display: grid;\n                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* ajusta responsivo */\n                justify-content: center; /* centraliza os itens */\n                gap: 10px; /* espaçamento entre os itens */\n            }\n            .animal-list-link {\n                text-decoration: none;\n                color: inherit;\n                display: block;\n                max-width: 400px; /* limite de largura */\n                width: 100%;\n                margin: 0 auto; /* centraliza dentro da coluna */\n            }\n            .animal-strip {\n                background-color: #fff;\n                border-radius: 10px;\n                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);\n                display: flex;\n                align-items: flex-start;\n                overflow: hidden;\n                transition: transform 0.2s ease, box-shadow 0.2s ease;\n            }\n            .animal-strip:hover {\n                transform: translateY(-3px);\n                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);\n            }\n            .animal-photo-list-container {\n                width: 100px;\n                height: 100px;\n                flex-shrink: 0;\n                padding: 10px; /* margem interna entre borda e foto */\n                box-sizing: border-box; /* garante que continue com 100x100 */\n            }\n            .animal-photo-list {\n                width: 100%;\n                height: 100%;\n                object-fit: cover;\n                border-radius: 8px; /* opcional, se quiser deixar arredondado */\n            }\n            .list-content {\n                padding: 15px 10px;\n                flex-grow: 1;\n            }\n            .list-content h3 {\n                margin: 0 0 10px;\n                font-family: 'GoodDog', sans-serif;\n                font-size: 1.5rem;\n                font-weight: 600;\n                color: var(--primary-color);\n            }\n            .characteristics-container {\n                display: flex;\n                flex-wrap: wrap;\n                gap: 8px;\n            }\n            .characteristic-box {\n                background-color: var(--background-light);\n                color: var(--text-light);\n                padding: 4px 10px;\n                border-radius: 6px;\n                font-size: 0.8rem;\n                font-weight: 500;\n                white-space: nowrap;\n            }\n        </style>\n    </head>\n    <body>\n        <div class=\"header\">\n            <div class=\"header-content\" style=\"justify-content: space-between; width: 100%;\">\n                <div style=\"display: flex; align-items: center; gap: 10px;\">\n                    <img class=\"header-logo\" src=\"${img_logo}\" alt=\"Logo Kaniu\"/>\n                </div>\n            </div>\n        </div>\n        <div class=\"filter-container\">\n          <button class=\"status-filter-btn ${APPLIED_STATUS === 'Abrigado' ? 'active' : ''}\" data-status=\"Abrigado\">Abrigados</button>\n          <button class=\"status-filter-btn ${APPLIED_STATUS === 'Adotado' ? 'active' : ''}\" data-status=\"Adotado\">Adotados</button>\n          <button class=\"status-filter-btn ${APPLIED_STATUS === 'Internado' ? 'active' : ''}\" data-status=\"Internado\">Internados</button>\n          <button class=\"status-filter-btn ${APPLIED_STATUS === 'Desaparecido' ? 'active' : ''}\" data-status=\"Desaparecido\">Desaparecidos</button>\n          <button class=\"status-filter-btn ${APPLIED_STATUS === 'Falecido' ? 'active' : ''}\" data-status=\"Falecido\">Falecidos</button>\n        </div>\n        <div class=\"main-container\">\n            <div class=\"list-container\">\n                ${cardsHtml}\n            </div>\n        </div>\n\n        <script>\n          (function () {\n            const ENDPOINT_URL = ${JSON.stringify(webhook_url)};\n            const DEFAULT_STATUS = 'Abrigado';\n            // Valor decidido no servidor (sem depender da URL)\n            const CURRENT_STATUS = ${JSON.stringify(APPLIED_STATUS)};\n        \n            // Atualiza classe ativa (segurança extra caso futuramente re-renderize via JS)\n            const statusButtons = document.querySelectorAll('.status-filter-btn');\n            function updateButtonStatus() {\n              statusButtons.forEach(btn => {\n                const isActive = btn.getAttribute('data-status') === CURRENT_STATUS;\n                btn.classList.toggle('active', isActive);\n              });\n            }\n            updateButtonStatus();\n        \n            // Clique nos botões → navega com ?status=... (sem redirecionar no primeiro load)\n            statusButtons.forEach(button => {\n              button.addEventListener('click', () => {\n                const statusToFilter = button.getAttribute('data-status');\n                const nextStatus = (statusToFilter === CURRENT_STATUS) ? DEFAULT_STATUS : statusToFilter;\n                const newUrl = ENDPOINT_URL+'?status='+encodeURIComponent(nextStatus);\n                window.location.href = newUrl;\n              });\n            });\n          })();\n        </script>\n\n    </body>\n    </html>\n`;\n\nreturn [{ json: { html: html } }];"
+                },
+                "type": "n8n-nodes-base.code",
+                "typeVersion": 2,
+                "position": [
+                    1344,
+                    -144
+                ],
+                "id": "2345bc22-c796-4852-bd6b-b5864f6a3c7e",
+                "name": "Animals List Page"
+            },
+            {
+                "parameters": {
+                    "assignments": {
+                        "assignments": [
+                            {
+                                "id": "fadb7979-539b-42f0-882d-dec4507354b3",
+                                "name": "status",
+                                "value": "={{ \n  [ \n    'Abrigado', \n    'Adotado', \n    'Internado', \n    'Desaparecido', \n    'Falecido'\n  ] \n}}",
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "position": [
+                    240,
+                    -128
+                ],
+                "id": "4fbfe606-5d03-4fe6-99ad-255b5e700ffa",
+                "name": "Animal Statuses"
+            },
+            {
+                "parameters": {
+                    "workflowId": {
+                        "__rl": true,
+                        "value": "95nGT6iUl9eJEgUA",
+                        "mode": "list",
+                        "cachedResultUrl": "/workflow/95nGT6iUl9eJEgUA",
+                        "cachedResultName": "Kaniu Data Tables"
+                    },
+                    "workflowInputs": {
+                        "mappingMode": "defineBelow",
+                        "value": {}
+                    },
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.executeWorkflow",
+                "typeVersion": 1.2,
+                "position": [
+                    240,
+                    128
+                ],
+                "id": "3349590c-5f1c-42ae-9345-00c716a1cff0",
+                "name": "Tables"
+            },
+            {
+                "parameters": {
+                    "jsCode": "/**********************************************\n/* Kaniu\n/* Sistema de gestão de abrigos de animais\n/* Página do animal\n/**********************************************/\n\n// Variáveis de trabalho\nconst animal = $('Get Details').first().json;\nconst especies = JSON.stringify($('Tables').first().json.especies);\nconst racas = JSON.stringify($('Tables').first().json.racas);\nconst generos = JSON.stringify($('Tables').first().json.generos);\nconst portes = JSON.stringify($('Tables').first().json.portes);\nconst cores = JSON.stringify($('Tables').first().json.cores);\nconst pelagens = JSON.stringify($('Tables').first().json.pelagens);\nconst icones = $('Icons').first().json;\n\nconst app_url = $('Kaniu').first().json.webhookUrl.split('webhook/')[1];\nconst img_logo = $('Constants').item.json.img_logo;\n\n// Códogo para obter o arquivo de estilo\nconst estilo = $('Estilo').first().json;\n\n// Função para converter boolean para \"Sim\" ou \"Não\"\nconst formatBoolean = (value) => value ? 'Sim' : 'Não';\n\n// Função para checar por valores nulos ou 0\nconst formatValue = (value) => value === null || value === 0 || value === undefined ? '' : value;\n\n// Função para calcular idade completa em anos, meses e dias\nconst calculateAge = (birthDate) => {\n    const today = new Date();\n    const dob = new Date(birthDate);\n\n    let years = today.getFullYear() - dob.getFullYear();\n    let months = today.getMonth() - dob.getMonth();\n    let days = today.getDate() - dob.getDate();\n\n    if (days < 0) {\n        months--;\n        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);\n        days = today.getDate() + (prevMonth.getDate() - dob.getDate());\n    }\n\n    if (months < 0) {\n        years--;\n        months = 12 + months;\n    }\n\n    let txt_anos = years == 0 ? '' : years == 1 ? '1 ano' : years + ' anos';\n    let txt_meses = months == 0 ? '' : months == 1 ? '1 mês' : months + ' meses';\n    let txt_e = (txt_anos == '' || txt_meses == '') ? '' : ' e ';\n\n    return txt_anos+txt_e+txt_meses;\n};\n\n// Calcula a idade do animal\nconst ageString = calculateAge(animal.nascimento);\n\n// Função para retornar um ícone\nfunction getIcon(icon_name) {\n    const iconValue = icones[icon_name].value;\n\n    if (!iconValue) {\n        return '<i class=\"fa-solid fa-notdef\"></i>'; // error icon\n    }\n\n    return '<i class=\"fa-solid fa-' + iconValue + '\"></i>';\n}\n\n//return {\"icone\": getIcon('vacina')};\n\n// Função para gerar o HTML dos ícones com base nas propriedades do animal\nfunction animalStatusIcons(animal) {\n    let iconsHtml = '';\n\n    // Verifica se o animal está castrado e adiciona o ícone se for verdade\n    if (animal.castrado) {\n        iconsHtml += '<div class=\"img-button-wrapper\"><i class=\"fa-solid fa-scissors\"></i><span class=\"tooltip\">Castrado</span></div>';\n    }\n\n    // Verifica se o animal está vacinado\n    if (animal.vacinado) {\n        iconsHtml += '<div class=\"img-button-wrapper\"><i class=\"fa-solid fa-syringe\"></i><span class=\"tooltip\">Vacinado</span></div>';\n    }\n\n    // Verifica se o animal está vermifugado\n    if (animal.vermifugado) {\n        iconsHtml += '<div class=\"img-button-wrapper\"><i class=\"fa-solid fa-pills\"></i><span class=\"tooltip\">Vermifugado</span></div>';\n    }\n\n    // Verifica se o animal está desparasitado\n    if (animal.desparasitado) {\n        iconsHtml += '<div class=\"img-button-wrapper\"><i class=\"fa-solid fa-bug-slash\"></i><span class=\"tooltip\">Desparasitado</span></div>';\n    }\n\n    return iconsHtml;\n}\n\n// Gera o html dos ícones indicando o status do animall\nconst iconesAnimal = animalStatusIcons(animal);\n\n// =========================================================================\n// O CÓDIGO DO N8N TERMINA AQUI. A PARTIR DAQUI VEM O HTML E O JAVASCRIPT\n// QUE SERÃO EXECUTADOS NO NAVEGADOR.\n// =========================================================================\n\n// Gera o html principal da página\nconst html = `\n<!DOCTYPE html>\n<html lang=\"pt-br\">\n\n${estilo.style}\n\n<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>\n<script src=\"https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns\"></script>\n<script src=\"https://kit.fontawesome.com/78b7eb0968.js\" crossorigin=\"anonymous\"></script>\n\n<script>\n    const cachedData = {};\n    \n    // =========================================================================\n    // FUNÇÕES DE LÓGICA DO POP-UP DE PESAGEM (AS FUNÇÕES DE ABRIR E CLIQUE FORAM REMOVIDAS/SIMPLIFICADAS)\n    // =========================================================================\n\n    // Função de tratamento do clique na linha da tabela.\n    // É esperado que a linha tenha o atributo data-record com o JSON do item.\n    function handlePesagemClick(rowElement) {\n        // 1. Obtém a string JSON com as entidades &quot;\n        const itemDataString = rowElement.getAttribute('data-record');\n        \n        // 2. Substitui as entidades &quot; pelas aspas duplas reais (\")\n        const safeJsonString = itemDataString.replace(/&quot;/g, '\"');\n        \n        // 3. Faz o parse da string JSON para um objeto\n        const record = JSON.parse(safeJsonString);\n        \n        // 4. Abre o pop-up com o registro\n        openPesagemPopup(record);\n    }\n\n    // Função para fechar o pop-up da pesagem\n    function closePesagemPopup() {\n        document.getElementById('overlay').style.display = 'none';\n        document.getElementById('pop-up-pesagem').style.display = 'none';\n        // Limpa a mensagem de erro\n        const errorElement = document.getElementById('pop-up-pesagem').querySelector('.error-message-pesagem');\n        if (errorElement) {\n            errorElement.remove();\n        }\n    }\n\n    // Função para abrir o popup de pesagem (novo ou editar)\n    function openPesagemPopup(record = null) {\n        if (record) {\n            // Edição\n            document.getElementById('pesagem-id').value = record.id;\n            document.getElementById('pesagem-data-input').value = record.data;\n            document.getElementById('pesagem-peso-input').value = record.peso;\n        } else {\n          // Novo registro\n          document.getElementById('pesagem-id').value = \"\";\n          const today = new Date().toISOString().split('T')[0]; // pega AAAA-MM-DD\n          document.getElementById('pesagem-data-input').value = today;\n          document.getElementById('pesagem-peso-input').value = \"\";\n        }\n    \n        document.getElementById('overlay').style.display = 'block';\n        document.getElementById('pop-up-pesagem').style.display = 'flex';\n    }\n    \n    // Função para salvar (update ou insert)\n    async function updatePesagemRecord() {\n        const id = document.getElementById('pesagem-id').value;\n        const data = document.getElementById('pesagem-data-input').value;\n        const peso = document.getElementById('pesagem-peso-input').value;\n    \n        const popup = document.getElementById('pop-up-pesagem');\n        const popupActions = popup.querySelector('.pop-up-actions');\n    \n        if (!data || !peso || isNaN(parseFloat(peso))) {\n            const errorElement = popup.querySelector('.error-message-pesagem');\n            if (errorElement) errorElement.remove();\n            popupActions.insertAdjacentHTML(\n                'beforebegin',\n                '<p class=\"error-message-pesagem\" style=\"color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;\">Preencha todos os campos corretamente.</p>'\n            );\n            return;\n        }\n    \n        try {\n            let payload = {\n                animal_id: '${animal.animal_id}',\n                data: data,\n                peso: parseFloat(peso)\n            };\n    \n            let url = \"\";\n            if (id) {\n                // atualização\n                payload.tipo_registro = \"pesagem\";\n                payload.id_registro = id;\n                url = \"https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update\";\n            } else {\n                // inclusão\n                url = \"https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-add-pesagem\";\n            }\n    \n            const response = await fetch(url, {\n                method: \"POST\",\n                headers: { \"Content-Type\": \"application/json\" },\n                body: JSON.stringify(payload)\n            });\n    \n            if (!response.ok) {\n                throw new Error(\"Falha ao salvar o registro de pesagem.\");\n            }\n    \n            showAlert(id ? \"Pesagem atualizada com sucesso!\" : \"Pesagem incluída com sucesso!\", \"success\", 2000);\n    \n            cachedData['pesagens'] = null;\n            await fetchTabData('pesagens');\n    \n        } catch (error) {\n            showAlert(\"Erro ao salvar a pesagem: \" + error.message, \"error\", 3000);\n        } finally {\n            closePesagemPopup();\n        }\n    }\n\n    \n    // =========================================================================\n\n    async function fetchTabData(tabId) {\n        if (cachedData[tabId]) {\n            return;\n        }\n\n        const tabContentElement = document.getElementById('tab-' + tabId);\n        //tabContentElement.innerHTML = '<div class=\"loading-message\">Carregando...</div>'; //teste\n\n        try {\n            const payload = {\n                tab_name: tabId,\n                animal_id: '${animal.animal_id}'\n            };\n\n            const response = await fetch(\"https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados\", {\n                method: 'POST',\n                headers: {\n                    'Content-Type': 'application/json'\n                },\n                body: JSON.stringify(payload)\n            });\n\n            if (!response.ok) {\n                throw new Error('Erro na resposta da rede: ' + response.statusText);\n            }\n\n            const data = await response.json();\n\n            // Trata a resposta do endpoint que agora retorna JSON com 'items' ou 'error'\n            if (data.error) {\n                tabContentElement.innerHTML = '<div class=\"no-data-message\">' + data.error + '</div>';\n\n            } else if (tabId !== 'resumo' && (data.items.length == 0 || data.items[0].id == null)) {\n                tabContentElement.innerHTML = '<div class=\"no-data-message\">Nenhum item encontrado.</div>';\n\n            } else if (data.items) {\n\n                // Mapeamento de chaves para títulos de coluna amigáveis\n                const columnMappings = {\n                    'eventos': {\n                        'data': 'Data',\n                        'tipo': 'Tipo',\n                        'descricao': 'Descrição',\n                        'veterinario_nome': 'Veterinário'\n                    },\n                    'pesagens': {\n                        'data': 'Data',\n                        'peso': 'Medição',\n                        'variacao': 'Variação'\n                    },\n                    'avaliacoes': {\n                        'data': 'Data',\n                        'observacao': 'Observação',\n                        'veterinario_nome': 'Veterinário',\n                        'temperatura': 'Temp.',\n                        'score': 'Score',\n                        'peso': 'Peso',\n                        'nota': 'Nota'\n                    },\n                    'imunizacoes': {\n                        'data_exibicao': 'Data',\n                        'tipo': 'Tipo',\n                        'nome_imunizante': 'Imunizante',\n                        'veterinario_nome': 'Veterinário',\n                        'aplicada': 'Aplicada'\n                    },\n                    'tratamentos': {\n                        'data': 'Data',\n                        'veterinario_nome': 'Veterinário',\n                        'medicamentos': 'Medicamentos',\n                        'finalizada': 'Finalizado'\n                    },\n                    'arquivos': {\n                        'data': 'Data',\n                        'nome': 'Nome',\n                        'observacao': 'Observação',\n                        'url': 'Visualizar'\n                    }\n                };\n\n                const excludedKeys = ['id', 'animal_id', 'veterinario_id', 'concluido', 'programado', 'atrasado'];\n\n                // Função para renderizar a tabela\n                const renderTable = (items, tabId) => {\n                    const currentMapping = columnMappings[tabId] || {};\n                    const headers = Object.keys(items[0]).filter(key => !excludedKeys.includes(key));\n\n                    let tableHTML = '<table class=\"tab-table\"><thead><tr>';\n\n                    headers.forEach(header => {\n                        const title = currentMapping[header] || header.charAt(0).toUpperCase() + header.slice(1);\n                        tableHTML += '<th>' + title + '</th>';\n                    });\n\n                    tableHTML += '</tr></thead><tbody>';\n\n                    items.forEach(item => {\n                        let rowAttributes = '';\n                        // MODIFICADO: Torna a linha clicável na aba de pesagens\n                        if (tabId === 'pesagens') {\n                            const safeJson = JSON.stringify(item).replace(/\"/g, '&quot;');\n                            rowAttributes = 'data-record=\"'+safeJson+'\" onclick=\"handlePesagemClick(this)\" style=\"cursor:pointer;\"';\n                        }\n                        tableHTML += '<tr '+rowAttributes+'>';\n                        headers.forEach(header => {\n                            let formattedContent = '';\n                            const cellContent = item[header];\n\n                            if (['data', 'data_exibicao'].includes(header) && cellContent) {\n                                const [year, month, day] = cellContent.split('-');\n                                formattedContent = day + '/' + month + '/' + year;\n                            } else if (header === 'peso' && cellContent !== null) {\n                                formattedContent = cellContent + ' kg';\n                            } else if (header === 'medicamentos' && Array.isArray(cellContent)) {\n                                formattedContent = '<ul>' + cellContent.map(med => '<li>' + med + '</li>').join('') + '</ul>';\n                            } else if (header === 'url' && cellContent) {\n                                formattedContent = '<a href=\"' + cellContent + '\" target=\"_blank\">Visualizar</a>';\n                            } else if (typeof cellContent === 'boolean') {\n                                formattedContent = cellContent ? 'Sim' : 'Não';\n                            } else {\n                                formattedContent = cellContent || '';\n                            }\n                            tableHTML += '<td>' + formattedContent + '</td>';\n                        });\n                        tableHTML += '</tr>';\n                    });\n\n                    tableHTML += '</tbody></table>';\n                    return tableHTML;\n                };\n\n                if (tabId == 'resumo') {\n                    renderizarResumo(data.items);\n                } else {\n                    // botão fixo no topo direito (exceto resumo)\n                    const ap = \"'\";\n                    const newButtonHTML = '<div class=\"new-button-fixed\"><button class=\"action-button\" onclick=\"handleNewRecord('+ap+tabId+ap+')\">Novo</button></div>';\n                \n                    tabContentElement.innerHTML = newButtonHTML + renderTable(data.items, tabId);\n                }\n\n                // Se for a guia de pesagens, renderiza o gráfico\n                if (tabId === 'pesagens' && data.chartData) {\n                    tabContentElement.innerHTML += '<div class=\"chart-container\"><canvas id=\"weightChart\"></canvas></div>';\n                    renderChart(data.chartData);\n                }\n\n                cachedData[tabId] = true;\n            }\n\n        } catch (error) {\n            tabContentElement.innerHTML = '<div class=\"error-message\">Ocorreu um erro ao carregar os dados.</div>';\n        }\n\n    }\n\n    function renderChart(chartData) {\n        // Converte dados do backend em pontos {x,y}\n        const dataPoints = chartData.map(item => ({\n            x: new Date(item.data),\n            y: item.peso\n        }));\n\n        const maxWeight = Math.max(...dataPoints.map(p => p.y));\n        const maxYValue = Math.ceil(maxWeight / 10) * 10;\n\n        const ctx = document.getElementById('weightChart').getContext('2d');\n\n        // pega primeira e última data reais do dataset\n        const dates = chartData.map(item => new Date(item.data));\n        const minDate = new Date(Math.min(...dates));\n        const today = new Date();\n\n        // adiciona margem de 15 dias antes da primeira data\n        const paddedMinDate = new Date(minDate);\n        paddedMinDate.setDate(minDate.getDate() - 15);\n\n        new Chart(ctx, {\n            type: 'line',\n            data: {\n                datasets: [{\n                    label: 'Peso',\n                    data: dataPoints,\n                    borderColor: '#4A90E2',\n                    backgroundColor: 'rgba(74, 144, 226, 0.2)',\n                    fill: true,\n                    tension: 0.3,\n                    pointRadius: 3\n                }]\n            },\n            options: {\n                responsive: true,\n                scales: {\n                    x: {\n                        type: 'time',\n                        time: {\n                            unit: 'month',\n                            displayFormats: {\n                                month: 'MMM yy' // Exibe Jan 23, Fev 23, etc.\n                            }\n                        },\n                        ticks: {\n                            callback: function(value, index, ticks) {\n                                const date = new Date(value);\n                                // Verifica se é o primeiro mês do ano (Janeiro, que é o mês 0)\n                                if (date.getMonth() === 0) {\n                                    return date.getFullYear(); // Exibe o ano completo\n                                } else {\n                                    // Retorna a primeira letra do mês\n                                    const month = date.toLocaleString('pt-BR', {\n                                        month: 'short'\n                                    });\n                                    return month.charAt(0).toUpperCase();\n                                }\n                            },\n                            autoSkip: true,\n                            maxRotation: 0,\n                            minRotation: 0\n                        },\n                        min: paddedMinDate,\n                        max: today,\n                        grid: {\n                            drawTicks: true\n                        }\n                    },\n                    y: {\n                        beginAtZero: true,\n                        suggestedMax: maxYValue\n                    }\n                },\n                plugins: {\n                    legend: {\n                        display: false\n                    }\n                }\n            }\n        });\n    }\n\n    function handleNewRecord(tabId) {\n        if (tabId === 'pesagens') {\n            openPesagemPopup();\n        } else {\n            // Pode expandir para imunizações, tratamentos etc.\n            showAlert('Abrindo formulário de novo registro em: ' + tabId, 'info', 2500);\n        }\n    }\n\n\n    // Funções para inicializar o sistema de guias, pop-ups e outras funcionalidades\n    function initTabs() {\n        const tabButtons = document.querySelectorAll('.tab-btn');\n        const tabContents = document.querySelectorAll('.tab-content');\n\n        tabButtons.forEach(button => {\n            button.addEventListener('click', () => {\n                const tabId = button.getAttribute('data-tab');\n\n                tabButtons.forEach(btn => btn.classList.remove('active'));\n                tabContents.forEach(content => content.classList.remove('active'));\n\n                button.classList.add('active');\n                document.getElementById('tab-' + tabId).classList.add('active');\n\n                fetchTabData(tabId);\n            });\n        });\n    }\n\n    let currentButton = null;\n    let currentType = null;\n\n    function openMenu(data, button, type, labelKey) {\n        currentButton = button;\n        currentType = type;\n\n        const menu = document.getElementById('pop-up-menu');\n        const overlay = document.getElementById('overlay');\n        const optionsContainer = document.getElementById('pop-up-options-container');\n\n        menu.querySelector('h2').textContent = \"Selecione \" + type.charAt(0).toUpperCase() + type.slice(1);\n\n        optionsContainer.innerHTML = '';\n        data.forEach(item => {\n            const option = document.createElement('div');\n            option.classList.add('pop-up-option');\n            option.textContent = item[labelKey];\n            option.setAttribute('data-id', item.id);\n\n            option.onclick = () => selectOption('${animal.animal_id}', item.id, item[labelKey]);\n            optionsContainer.appendChild(option);\n        });\n\n        overlay.style.display = 'block';\n        menu.style.display = 'flex';\n    }\n\n    function closeMenu() {\n        document.getElementById('overlay').style.display = 'none';\n        document.getElementById('pop-up-menu').style.display = 'none';\n    }\n\n    function selectOption(idAnimal, valueId, valueText) {\n        if (currentButton && currentType) {\n            updateCharacteristic(idAnimal, currentType, valueId, valueText);\n        }\n        closeMenu();\n    }\n\n    async function updateCharacteristic(animalId, type, valueId, valueText) {\n        try {\n            let payload = {\n                animal_id: animalId,\n                caracteristica: type,\n                caracteristica_id: valueId,\n                caracteristica_label: valueText\n            };\n            await fetch(\"https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update\", {\n                method: \"POST\",\n                headers: {\n                    \"Content-Type\": \"application/json\"\n                },\n                body: JSON.stringify(payload)\n            });\n\n            currentButton.textContent = valueText;\n            showAlert('Item salvo com sucesso.');\n        } catch (error) {\n            showAlert('Erro ao atualizar: ' + type + ' - ', error);\n        }\n    }\n\n    function initDatePopup() {\n        const nascimentoButton = document.getElementById(\"open-nascimento-menu\");\n        const nascimentoPopup = document.getElementById(\"pop-up-nascimento\");\n        const nascimentoInput = document.getElementById(\"nascimento-input\");\n        const confirmNascimento = document.getElementById(\"confirm-nascimento\");\n        const cancelNascimento = document.getElementById(\"cancel-nascimento\");\n        const overlay = document.getElementById(\"overlay\");\n        const popupActions = nascimentoPopup.querySelector('.pop-up-actions');\n\n        nascimentoButton.onclick = function() {\n            if (nascimentoButton.textContent !== \"Definir Data\") {\n                nascimentoInput.value = nascimentoButton.textContent;\n            } else {\n                nascimentoInput.value = \"\";\n            }\n            // Limpa a mensagem de erro ao abrir\n            clearErrorMessage(); \n            overlay.style.display = \"block\";\n            nascimentoPopup.style.display = \"flex\";\n        };\n        \n        function clearErrorMessage() {\n            const errorElement = nascimentoPopup.querySelector('.error-message-nascimento');\n            if (errorElement) {\n                errorElement.remove();\n            }\n        }\n\n        function showErrorMessage(message) {\n            clearErrorMessage();\n            popupActions.insertAdjacentHTML('beforebegin', '<p class=\"error-message-nascimento\" style=\"color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;\">' + message + '</p>');\n        }\n\n        function closeNascimentoPopup() {\n            clearErrorMessage();\n            overlay.style.display = \"none\";\n            nascimentoPopup.style.display = \"none\";\n        }\n\n        cancelNascimento.onclick = closeNascimentoPopup;\n\n        confirmNascimento.onclick = async function() {\n            const novaData = nascimentoInput.value;\n            if (!novaData) {\n                showErrorMessage('Selecione uma data válida.');\n                return;\n            }\n\n            try {\n                await fetch(\"https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update\", {\n                    method: \"POST\",\n                    headers: {\n                        \"Content-Type\": \"application/json\"\n                    },\n                    body: JSON.stringify({\n                        animal_id: '${animal.animal_id}',\n                        caracteristica: \"nascimento\",\n                        data_nascimento: novaData\n                    })\n                });\n\n                nascimentoButton.textContent = novaData;\n                showAlert(\"Data de nascimento atualizada com sucesso!\");\n            } catch (error) {\n                showAlert(\"Erro ao atualizar data de nascimento:\", error);\n            }\n\n            closeNascimentoPopup();\n        };\n\n        document.addEventListener(\"keydown\", function(event) {\n            if (event.key === \"Escape\" || event.key === \"Esc\") {\n                closeMenu();\n                closeNascimentoPopup();\n                closePesagemPopup(); // Fechar pop-up de Pesagem no ESC\n            }\n        });\n    }\n\n    document.addEventListener('DOMContentLoaded', function() {\n        initTabs();\n        initDatePopup();\n\n        document.getElementById('open-especie-menu').onclick = () =>\n            openMenu(${especies}, document.getElementById('open-especie-menu'), 'especie', 'especie');\n\n        document.getElementById('open-raca-menu').onclick = () =>\n            openMenu(${racas}, document.getElementById('open-raca-menu'), 'raca', 'raca');\n\n        document.getElementById('open-genero-menu').onclick = () =>\n            openMenu(${generos}, document.getElementById('open-genero-menu'), 'genero', 'genero');\n\n        document.getElementById('open-porte-menu').onclick = () =>\n            openMenu(${portes}, document.getElementById('open-porte-menu'), 'porte', 'porte');\n\n        document.getElementById('open-cor-menu').onclick = () =>\n            openMenu(${cores}, document.getElementById('open-cor-menu'), 'cor', 'cor');\n\n        document.getElementById('open-pelagem-menu').onclick = () =>\n            openMenu(${pelagens}, document.getElementById('open-pelagem-menu'), 'pelagem', 'pelagem');\n            \n        // Configura os botões do pop-up de pesagem (MANTIDO CASO O POP-UP SEJA USADO PARA 'NOVO')\n        document.getElementById('confirm-pesagem').onclick = updatePesagemRecord;\n        document.getElementById('cancel-pesagem').onclick = closePesagemPopup;\n\n\n        // Carrega a guia de resumo por padrão\n        document.querySelector('[data-tab=\"resumo\"]').click();\n    });\n\n    function renderizarResumo(resumoData) {\n\n        if (!resumoData || resumoData.length === 0 ) {\n            document.getElementById('tab-resumo').innerHTML =\n                '<p class=\"no-data-message\">Nenhum dado de resumo disponível.</p>';\n            return;\n        }\n\n        const dados = resumoData[0];\n\n        const secoes = {\n            'saude-geral-list': [\n                { label: 'Última avaliação', value: dados[\"Última avaliação\"] || 'N/A' },\n                { label: 'Score Corporal', value: dados['Score Corporal'] !== null ? dados[\"Score Corporal\"] : 'N/A' },\n                { label: 'Índice de saúde', value: dados['Índice de saúde'] || 'N/A' },\n                { label: 'Observações', value: dados['Observações'] || 'N/A' }\n            ],\n            'vacinacao-list': [\n                { label: 'Última vacinação', value: dados['Última vacinação'] || 'N/A' },\n                { label: 'Próxima vacinação', value: dados['Próxima vacinação'] || 'N/A' }\n            ],\n            'parasitas-list': [\n                { label: 'Última vermifugação', value: dados['Última vermifugação'] || 'N/A' },\n                { label: 'Próxima vermifugação', value: dados['Próxima vermifugação'] || 'N/A' },\n                { label: 'Última desparasitação', value: dados['Última desparasitação'] || 'N/A' },\n                { label: 'Próxima desparasitação', value: dados['Próxima desparasitação'] || 'N/A' }\n            ],\n            'peso-list': [\n                { label: 'Data da última pesagem', value: dados['Data pesagem'] || 'N/A' },\n                { label: 'Peso atual', value: dados['Último peso'] !== null ? dados[\"Último peso\"] + ' kg' : 'N/A' },\n                { label: 'Peso anterior', value: dados['Peso anterior'] !== null ? dados[\"Peso anterior\"] + ' kg' : \"N/A\" },\n                { label: 'Variação de peso', value: dados['Variação de peso'] || 'N/A' }\n            ]\n        };\n\n        for (const [id, itens] of Object.entries(secoes)) {\n            const container = document.getElementById(id);\n\n            if (container) {\n                container.innerHTML = ''; // limpa antes\n                itens.forEach(item => {\n                    const itemHTML =\n                        '<div class=\"resume-item\"><strong>' + item.label + ':</strong> ' +\n                        '<span class=\"resume-value\">' + item.value + '</span></div>';\n                    container.innerHTML += itemHTML;\n                });\n            }\n        }\n    }\n\n    function showAlert(message, type = 'success', duration = 1500) {\n        console.log('showAlert:' + message + ', ' + type + ', ' + duration);\n        const popup = document.getElementById('alert-popup');\n        const icon = document.getElementById('alert-icon');\n        const messageText = document.getElementById('alert-message');\n\n        // Limpa classes anteriores e adiciona a nova\n        popup.className = 'alert-popup';\n        popup.classList.add(type);\n        popup.classList.add('show');\n        \n        // Define o texto da mensagem\n        messageText.textContent = message;\n\n        // Limpa e define o conteúdo do ícone\n        //icon.innerHTML = '';\n        //icon.classList.add(type);\n\n        // Define um temporizador para esconder o pop-up\n        setTimeout(() => {\n            popup.classList.remove('show');\n        }, duration);\n    }\n</script>\n\n<script>\n      // Função para simular o início da criação de um novo registro\n    function newRecord(tabId) {\n        showAlert('Iniciando a criação de um novo registro em: ' + tabId, 'info', 2500);\n        // Coloque aqui a lógica para abrir um pop-up/formulário \n        // para a criação do novo item para a guia (tabId)\n    }\n</script>\n\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Adote ${animal.nome}</title>\n</head>\n\n<body>\n    <header class=\"header\">\n        <div class=\"header-content\">\n            <img class=\"header-logo\" src=\"${img_logo}\" alt=\"Logo Kaniu\"/>\n        </div>\n    </header>\n    <div class=\"main-content\">\n        <div class=\"animal-details-frame\">\n            <a href=\"${app_url}\" class=\"back-button\">Voltar</a>\n            <div class=\"content-wrapper\">\n                <div class=\"animal-photo-container\">\n                    <img class=\"animal-photo\" src=\"${animal.foto}\" alt=\"Foto de ${animal.nome}\" />\n                </div>\n                <div class=\"text-content\">\n                    <div class=\"animal-header\">\n                        <h1>${animal.nome}</h1>\n                    </div>\n                    <div class=\"button-container\">\n                        ${iconesAnimal}\n                    </div>\n                </div>\n            </div>\n            <div class=\"details-container\">\n                <div class=\"details-grid\">\n                    <div class=\"detail-item\">\n                        <strong>Espécie:</strong>\n                        <button class=\"detail-button\" id=\"open-especie-menu\">${animal.especie}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Raça:</strong>\n                        <button class=\"detail-button\" id=\"open-raca-menu\">${animal.raça}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Gênero:</strong>\n                        <button class=\"detail-button\" id=\"open-genero-menu\">${animal.sexo}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Porte:</strong>\n                        <button class=\"detail-button\" id=\"open-porte-menu\">${animal.porte}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Cor:</strong>\n                        <button class=\"detail-button\" id=\"open-cor-menu\">${animal.cor}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Pelagem:</strong>\n                        <button class=\"detail-button\" id=\"open-pelagem-menu\">${animal.pelagem}</button>\n                    </div>\n                    <div class=\"detail-item\">\n                        <strong>Data de Nascimento:</strong>\n                        <button id=\"open-nascimento-menu\" class=\"detail-button\">${animal.nascimento ? animal.nascimento : 'Definir Data'}</button>\n                    </div>\n                    <div class=\"detail-item\"><strong>Faixa Etária:</strong> <span class=\"characteristic-box\">${animal.faixa_etaria}</span></div>\n                    <div class=\"detail-item\"><strong>Idade:</strong> <span class=\"characteristic-box\">${ageString}</span></div>\n                    <div class=\"detail-item\"><strong>Peso:</strong> <span class=\"characteristic-box\">${formatValue(animal.peso)} kg</span></div>\n                    <div class=\"detail-item\"><strong>Altura:</strong> <span class=\"characteristic-box\">${formatValue(animal.altura)} cm</span></div>\n                    <div class=\"detail-item\"><strong>Comprimento:</strong> <span class=\"characteristic-box\">${formatValue(animal.comprimento)} cm</span></div>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"tab-container\">\n            <div class=\"tab-nav\">\n                <button class=\"tab-btn active\" data-tab=\"resumo\">Resumo</button>\n                <button class=\"tab-btn\" data-tab=\"eventos\">Histórico</button>\n                <button class=\"tab-btn\" data-tab=\"avaliacoes\">Avaliação</button>\n                <button class=\"tab-btn\" data-tab=\"pesagens\">Pesagem</button>\n                <button class=\"tab-btn\" data-tab=\"imunizacoes\">Imunização</button>\n                <button class=\"tab-btn\" data-tab=\"tratamentos\">Tratamento</button>\n                <button class=\"tab-btn\" data-tab=\"arquivos\">Arquivos</button>\n            </div>\n\n            <div class=\"tab-content-area\">\n                <div id=\"tab-resumo\" class=\"tab-content\">\n                    <div class=\"resume-sections\">\n                        <div class=\"resume-section\">\n                            <h3 class=\"resume-title\">Saúde Geral</h3>\n                            <div id=\"saude-geral-list\" class=\"resume-list\">\n                            </div>\n                        </div>\n\n                        <div class=\"resume-section\">\n                            <h3 class=\"resume-title\">Vacinação</h3>\n                            <div id=\"vacinacao-list\" class=\"resume-list\">\n                            </div>\n                        </div>\n\n                        <div class=\"resume-section\">\n                            <h3 class=\"resume-title\">Controle de Parasitas</h3>\n                            <div id=\"parasitas-list\" class=\"resume-list\">\n                            </div>\n                        </div>\n\n                        <div class=\"resume-section\">\n                            <h3 class=\"resume-title\">Avaliação e Peso</h3>\n                            <div id=\"peso-list\" class=\"resume-list\">\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                <div id=\"tab-eventos\" class=\"tab-content\"></div>\n                <div id=\"tab-avaliacoes\" class=\"tab-content\"></div>\n                <div id=\"tab-pesagens\" class=\"tab-content\"></div>\n                <div id=\"tab-imunizacoes\" class=\"tab-content\"></div>\n                <div id=\"tab-tratamentos\" class=\"tab-content\"></div>\n                <div id=\"tab-arquivos\" class=\"tab-content\"></div>\n            </div>\n        </div>\n    </div>\n\n    <div id=\"overlay\" class=\"overlay\"></div>\n    <div id=\"pop-up-menu\" class=\"pop-up-menu\">\n        <span class=\"pop-up-close\" onclick=\"closeMenu()\">&times;</span>\n        <h2>Selecione a Espécie</h2>\n        <div id=\"pop-up-options-container\" class=\"pop-up-options-container\">\n        </div>\n    </div>\n\n    <div id=\"pop-up-nascimento\" class=\"pop-up-menu\" style=\"width: 280px; padding: 15px;\">\n        <span class=\"pop-up-close\" onclick=\"document.getElementById('pop-up-nascimento').style.display='none'; document.getElementById('overlay').style.display='none';\">&times;</span>\n        <h2 id=\"nascimento-popup-title\">Alterar Data de Nascimento</h2>\n        <div class=\"pop-up-options-container\" style=\"align-items: center; width: 100%; box-sizing: border-box;\">\n            <input type=\"date\" id=\"nascimento-input\" class=\"date-input\" style=\"width: 100%;\" />\n        </div>\n        <div class=\"pop-up-actions\" style=\"margin-top: 5px;\">\n            <button id=\"confirm-nascimento\" class=\"detail-button\" style=\"background-color: var(--primary-color); color: var(--card-background); flex: 1; max-width: 100px;\">Salvar</button>\n            <button id=\"cancel-nascimento\" class=\"detail-button\" style=\"flex: 1; max-width: 100px;\">Cancelar</button>\n        </div>\n    </div>\n    \n    <div id=\"alert-popup\" class=\"alert-popup\">\n        <span id=\"alert-message\"></span>\n    </div>\n\n    <div id=\"pop-up-pesagem\" class=\"pop-up-menu\" style=\"width: 280px; padding: 40px;\">\n        <span class=\"pop-up-close\" onclick=\"closePesagemPopup()\">&times;</span>\n        <h2>Pesagem</h2>\n        <div class=\"pop-up-content\" style=\"display: flex; flex-direction: column; gap: 5px;\">\n            <input type=\"hidden\" id=\"pesagem-id\" />\n            \n            <label style=\"font-size: 0.8rem; color: var(--text-dark);\">Data da Medição</label>\n            <input type=\"date\" id=\"pesagem-data-input\" class=\"date-input\" />\n            \n            <label style=\"font-size: 0.8rem; color: var(--text-dark);\">Peso (kg)</label>\n            <input type=\"number\" step=\"0.1\" id=\"pesagem-peso-input\" class=\"date-input\" placeholder=\"Ex: 5.2\" />\n        </div>\n        <div class=\"pop-up-actions\" style=\"margin-top: 5px;\">\n            <button id=\"cancel-pesagem\" class=\"cancel-button\" style=\"flex: 1; max-width: 100px;\">Cancelar</button>\n            <button id=\"confirm-pesagem\" class=\"action-button\" flex: 1; max-width: 100px;\">Salvar</button>\n        </div>\n    </div>\n    <script>\n        (function () {\n          function setToolbarOffsets() {\n            document.querySelectorAll('.tab-content').forEach(tab => {\n              const toolbar = tab.querySelector('.new-button-fixed');\n              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;\n              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;\n              const offset = toolbarH + padTop;\n              tab.style.setProperty('--tab-header-offset', offset + 'px');\n            });\n          }\n        \n          // inicial + resize\n          window.addEventListener('load', setToolbarOffsets);\n          window.addEventListener('resize', setToolbarOffsets);\n        \n          // se a barra “Novo” mudar de altura (quebrar linha, fonte, etc.)\n          const ro = new ResizeObserver(setToolbarOffsets);\n          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));\n        })();\n    </script>\n\n    <script>\n        (function () {\n          function setToolbarOffsets() {\n            document.querySelectorAll('.tab-content').forEach(tab => {\n              const toolbar = tab.querySelector('.new-button-fixed');\n              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;\n              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;\n              const offset = toolbarH + padTop;\n              tab.style.setProperty('--tab-header-offset', offset + 'px');\n            });\n          }\n        \n          window.addEventListener('load', setToolbarOffsets);\n          window.addEventListener('resize', setToolbarOffsets);\n        \n          const ro = new ResizeObserver(setToolbarOffsets);\n          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));\n        })();\n    </script>\n\n</body>\n\n</html>\n`;\n\nreturn [{ json: { html: html } }];"
+                },
+                "type": "n8n-nodes-base.code",
+                "typeVersion": 2,
+                "position": [
+                    1344,
+                    128
+                ],
+                "id": "33116622-edc8-463b-a292-2db189071854",
+                "name": "Details Page"
+            },
+            {
+                "parameters": {
+                    "mode": "raw",
+                    "jsonOutput": "  {\n    \"vacina\": {\"value\": \"syringe\"},\n    \"acidente\": {\"value\": \"heart-crack\"},\n    \"observacao\": {\"value\": \"comment-dots\"},\n    \"animal\": {\"value\": \"paw\"},\n    \"casa\": {\"value\": \"house\"},\n    \"usuario\": {\"value\": \"user\"},\n    \"canil\": {\"value\": \"shield-dog\"},\n    \"info\": {\"value\": \"circle-info\"},\n    \"adotado\" : {\"value\": \"house-heart\"},\n    \"internado\": {\"value\": \"hospital\"},\n    \"desaparecido\": {\"value\": \"map-location-dot\"},\n    \"falecido\": {\"value\": \"tombstone\"},\n    \"todos\": {\"value\": \"globe\"},\n    \"animais\": {\"value\": \"paw\"},\n    \"canil\": {\"value\": \"house\"},\n    \"animais\": {\"value\": \"paw\"}\n  }",
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "position": [
+                    -224,
+                    0
+                ],
+                "id": "2e202a3b-a7e0-49ea-a91b-8d6ee906189b",
+                "name": "Icons"
+            },
+            {
+                "parameters": {
+                    "jsCode": "const style = `\n<style>\n    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');\n    \n    @font-face {\n        font-family: 'GoodDog';\n        src: url('https://raw.githubusercontent.com/viralatinhaz/kaniu/main/GoodDog.TTF') format('truetype');\n        font-weight: normal;\n        font-style: normal;\n    }\n\n    :root {\n        --primary-color: #FF6600;\n        --secondary-color: #5A5D7F;\n        --background-light: #F4F6F9;\n        --card-background: #FFFFFF;\n        --text-dark: #333333;\n        --text-light: #666666;\n        --text-faded: #999999;\n        --border-color: #E0E0E0;\n\n        /* Alturas/offsets para sticky */\n        --tab-toolbar-h: 44px;   /* altura da barra “Novo” */\n        --tab-content-pt: 0px;   /* padding-top da área rolável (.tab-content) */\n        --tab-header-offset: calc(var(--tab-toolbar-h) + var(--tab-content-pt));\n    }\n    \n    body {\n        font-family: 'Poppins', sans-serif;\n        margin: 0;\n        padding: 0;\n        height: 100vh;\n        width: 100vw;\n        display: flex;\n        flex-direction: column;\n        background-color: var(--background-light);\n        color: var(--text-dark);\n        box-sizing: border-box;\n        overflow: hidden;\n    }\n    \n    .header {\n        width: 100%;\n        padding: 10px 20px;\n        background-color: var(--card-background);\n        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);\n        display: flex;\n        align-items: center;\n        box-sizing: border-box;\n        flex-shrink: 0;\n    }\n    \n    .header-content {\n        display: flex;\n        align-items: center;\n        gap: 5px;\n        margin-left: 5px;\n    }\n    \n    .header-logo {\n        /* width: 40px; */\n        height: 32px;\n    }\n    \n    .header-title {\n        font-family: 'GoodDog', sans-serif;\n        font-size: 1.8rem;\n        color: var(--primary-color);\n        margin: 0;\n    }\n    \n    .main-content {\n        flex: 1;\n        display: flex;\n        flex-direction: row;\n        gap: 5px;\n        padding: 5px;\n        box-sizing: border-box;\n        height: calc(100% - 60px);\n    }\n    \n    .animal-details-frame {\n        background-color: var(--card-background);\n        border-radius: 10px;\n        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);\n        width: 380px;\n        display: flex;\n        flex-direction: column;\n        flex-shrink: 0;\n        height: 100%;\n        overflow: hidden;\n        position: relative;\n    }\n    \n    .content-wrapper {\n        display: flex;\n        flex-direction: row;\n        align-items: flex-start;\n        gap: 5px;\n        padding: 20px;\n        flex-shrink: 0;\n        position: relative;\n    }\n    \n    .animal-photo-container {\n        width: 100px;\n        height: 100px;\n        flex-shrink: 0;\n        border-radius: 15px;\n        overflow: hidden;\n        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);\n    }\n    \n    .animal-photo {\n        width: 100%;\n        height: 100%;\n        object-fit: cover;\n    }\n    \n    .text-content {\n        display: flex;\n        flex-direction: column;\n        justify-content: space-between;\n        align-items: flex-start;\n        flex: 1;\n        height: 100px;\n    }\n    \n    .animal-header h1 {\n        font-family: 'GoodDog', sans-serif;\n        font-size: 2rem;\n        font-weight: 600;\n        color: var(--secondary-color);\n        margin: 0;\n        text-align: left;\n    }\n    \n    .details-container {\n        overflow-y: auto;\n        flex: 1;\n        padding: 0 10px 10px 10px;\n        scrollbar-width: regular;\n        scrollbar-color: var(--secondary-color) var(--background-light);\n    }\n    \n    .details-container::-webkit-scrollbar { width: 14px; }\n    .details-container::-webkit-scrollbar-track { background: var(--background-light); border-radius: 10px; }\n    .details-container::-webkit-scrollbar-thumb {\n        background-color: var(--secondary-color);\n        border-radius: 10px;\n        border: 4px solid var(--background-light);\n        background-clip: padding-box;\n    }\n    \n    .details-grid { display: flex; flex-direction: column; gap: 5px; width: 100%; text-align: left; }\n    \n    .detail-item {\n        background-color: transparent;\n        padding: 12px 15px;\n        display: flex;\n        align-items: center;\n        justify-content: space-between;\n        border-bottom: 1px solid var(--border-color);\n        border-radius: 0;\n    }\n    .detail-item strong { font-size: 0.85rem; color: var(--text-dark); }\n    .characteristic-box { background-color: transparent; color: var(--text-light); font-size: 0.8rem; font-weight: 500; }\n    \n    .back-button {\n        position: absolute;\n        top: 15px;\n        right: 15px;\n        background-color: var(--background-light);\n        border: none;\n        color: var(--primary-color);\n        padding: 5px 12px;\n        border-radius: 6px;\n        text-decoration: none;\n        font-size: 0.8rem;\n        transition: all 0.2s ease;\n        box-shadow: 0 2px 5px rgba(0,0,0,0.1);\n        font-weight: 500;\n        z-index: 10;\n    }\n    .back-button:hover { background-color: var(--primary-color); color: var(--card-background); }\n    \n    .detail-button {\n        display: inline-block;\n        background-color: var(--background-light);\n        border: none;\n        color: var(--secondary-color);\n        padding: 5px 12px;\n        border-radius: 6px;\n        text-decoration: none;\n        font-size: 0.8rem;\n        transition: all 0.2s ease;\n        box-shadow: none;\n        font-weight: 500;\n        text-align: center;\n        white-space: nowrap;\n        cursor: pointer;\n    }\n    .detail-button:hover { background-color: var(--secondary-color); color: var(--card-background); }\n\n    .button-container { display: flex; gap: 5px; flex-shrink: 0; }\n\n    .img-button-wrapper {\n        position: relative;\n        display: flex; align-items: center; justify-content: center;\n        width: 32px; height: 32px; border-radius: 8px;\n        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);\n        transition: all 0.2s ease;\n        cursor: default;\n    }\n    .img-button { width: 24px; height: 24px; object-fit: contain; }\n\n    .img-button-wrapper .tooltip {\n        visibility: hidden; width: max-content;\n        background-color: var(--secondary-color); color: var(--card-background);\n        text-align: center; border-radius: 6px; padding: 5px 10px;\n        position: absolute; z-index: 1; bottom: 150%; left: 50%; transform: translateX(-50%);\n        opacity: 0; transition: opacity 0.3s; font-size: 0.75rem; white-space: nowrap;\n    }\n    .img-button-wrapper .tooltip::after {\n        content: \"\"; position: absolute; top: 100%; left: 50%; margin-left: -5px;\n        border-width: 5px; border-style: solid;\n        border-color: var(--secondary-color) transparent transparent transparent;\n    }\n    .img-button-wrapper:hover .tooltip { visibility: visible; opacity: 1; }\n\n    .overlay {\n        position: fixed; top: 0; left: 0; width: 100%; height: 100%;\n        background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);\n        z-index: 20; display: none;\n    }\n    \n    .pop-up-menu {\n        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);\n        background-color: var(--card-background); border-radius: 10px;\n        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);\n        padding: 15px; z-index: 30; display: none; flex-direction: column; gap: 10px;\n        max-height: 80vh; overflow-y: auto; width: 300px;\n    }\n    .pop-up-menu h2 { margin: 0 0 5px 0; font-size: 1rem; color: var(--secondary-color); text-align: center; }\n    .pop-up-options-container { display: flex; flex-direction: column; gap: 5px; }\n    .pop-up-option {\n        padding: 8px 12px; background-color: var(--background-light); border-radius: 6px;\n        cursor: pointer; transition: all 0.2s ease; font-weight: 500; font-size: 0.8rem;\n    }\n    .pop-up-option:hover, .pop-up-option.selected { background-color: var(--secondary-color); color: var(--card-background); }\n    .pop-up-close { position: absolute; top: 5px; right: 10px; font-size: 1.2rem; cursor: pointer; color: var(--text-faded); }\n    \n    .date-input { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; font-size: 14px; }\n    .pop-up-actions { display: flex; justify-content: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }\n    .confirm-button, .cancel-button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; flex: 1; max-width: 120px; }\n    .confirm-button { background-color: #4CAF50; color: #fff; }\n    .cancel-button { background-color: #ccc; }\n\n    .small-pop-up { min-height: auto; padding: 16px; gap: 12px; flex-direction: column; justify-content: flex-start; }\n    .small-pop-up h2 { font-size: 16px; margin-bottom: 12px; }\n    .pop-up-content { margin-bottom: 16px; }\n\n    .popup-button {\n        background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 8px;\n        padding: 6px 14px; cursor: pointer; font-size: 14px; transition: background 0.2s;\n    }\n    .popup-button:hover { background-color: #e0e0e0; }\n\n    #pop-up-nascimento {\n        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);\n        background-color: var(--card-background); border-radius: 10px;\n        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);\n        padding: 15px; z-index: 30; display: none; flex-direction: column; gap: 10px; width: 250px;\n    }\n\n    /* Sistema de Guias */\n    .tab-container {\n        width: 100%; height: 100%;\n        display: flex; flex-direction: column;\n        background-color: var(--background-light);\n        border-radius: 10px; overflow: hidden;\n        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);\n        flex: 1;\n    }\n\n    .tab-nav {\n        display: flex; background-color: var(--background-light);\n        border-bottom: 2px solid var(--border-color);\n        padding: 0; margin: 0; flex-shrink: 0;\n        overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;\n    }\n    .tab-nav::-webkit-scrollbar { display: none; }\n\n    .tab-btn {\n        flex: 1; min-width: 80px; padding: 15px 20px;\n        background-color: transparent; border: none; border-bottom: 3px solid transparent;\n        color: var(--text-light); font-size: 0.8rem; font-weight: 500; cursor: pointer;\n        transition: all 0.3s ease; white-space: nowrap; position: relative; text-align: center;\n    }\n    .tab-btn:hover { background-color: rgba(255, 255, 255, 0.5); color: var(--secondary-color); }\n    .tab-btn.active { background-color: var(--card-background); color: var(--secondary-color); border-bottom-color: var(--primary-color); font-weight: 600; }\n\n    .tab-content-area {\n        flex: 1; background-color: var(--card-background);\n        overflow: hidden; position: relative; font-size: 0.7rem;\n    }\n\n    .tab-content {\n        display: none; height: 100%;\n        padding: var(--tab-content-pt) 20px 20px;\n        overflow-y: auto; box-sizing: border-box;\n        position: relative; min-height: 200px;\n    }\n    .tab-content.active { display: block; }\n\n    .tab-content::-webkit-scrollbar { width: 8px; }\n    .tab-content::-webkit-scrollbar-track { background: var(--background-light); border-radius: 4px; }\n    .tab-content::-webkit-scrollbar-thumb { background-color: var(--text-faded); border-radius: 4px; }\n    .tab-content::-webkit-scrollbar-thumb:hover { background-color: var(--secondary-color); }\n\n    /* Toolbar “Novo” (sticky) */\n    .new-button-fixed {\n        position: sticky; top: 0; z-index: 10;\n        background: var(--card-background);\n        padding: 8px; min-height: var(--tab-toolbar-h);\n        display: flex; align-items: center; justify-content: flex-end;\n    }\n    .new-button-fixed .action-button {\n        background-color: var(--primary-color); color: #fff;\n        font-size: 0.85rem; padding: 6px 12px; border: none; border-radius: 6px;\n        cursor: pointer; transition: background 0.2s;\n    }\n    .new-button-fixed .action-button:hover { background-color: #3a4ac0; }\n\n    /* Tabela com header fixo */\n    .tab-table {\n        width: 100%;\n        border-collapse: separate;  /* melhor para sticky (Safari/Chromium) */\n        border-spacing: 0;\n        margin-top: 0;\n    }\n\n    /* Header gruda e usa offset calculado */\n    .tab-table thead {\n        position: sticky;\n        top: var(--tab-header-offset);\n        z-index: 5;\n        background: var(--background-light);\n    }\n\n    /* Linha sutil sob o header */\n    .tab-table thead th::after {\n        content: \"\";\n        position: absolute;\n        left: 0; right: 0; bottom: -1px;\n        height: 1px;\n        background: var(--border-color);\n    }\n\n    /* Células */\n    .tab-table th, .tab-table td {\n        padding: 12px 15px; text-align: left;\n        border-bottom: 1px solid var(--border-color);\n    }\n    .tab-table thead th {\n        position: relative;      /* para o ::after */\n        background-color: var(--background-light);\n        font-weight: 600; color: var(--text-dark);\n    }\n    .tab-table td { color: var(--text-light); }\n    .tab-table tbody tr:hover { background-color: rgba(90, 93, 127, 0.03); }\n\n    /* Caso alguma guia não tenha toolbar, zere o offset nessa guia */\n    #tab-resumo .tab-table thead,\n    #tab-qualquer-guia-sem-toolbar .tab-table thead { top: 0; }\n\n    /* Timeline / Resumo */\n    .timeline-container { padding: 20px; }\n    .timeline-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 0 15px; }\n    .timeline-column-title { flex: 1; font-weight: 600; color: var(--secondary-color); text-align: center; }\n    .timeline-column-title.date-column { min-width: 100px; text-align: left; }\n    .timeline-grid { display: flex; flex-direction: column; gap: 8px; }\n    .timeline-item { background-color: var(--background-light); padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px; }\n    .timeline-item strong { min-width: 100px; color: var(--text-dark); font-weight: 500; }\n    .timeline-box { flex: 1; background-color: var(--card-background); color: var(--text-light); padding: 6px 10px; border-radius: 6px; font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n\n    .resume-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 10px; }\n    .resume-section { margin-bottom: 0; }\n    .resume-title { color: var(--secondary-color); font-weight: 600; margin: 0 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--background-light); }\n    .resume-list { display: flex; flex-direction: column; gap: 8px; }\n    .resume-item { background-color: var(--background-light); padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }\n    .resume-item strong { font-size: 0.85rem; color: var(--text-dark); font-weight: 500; }\n    .resume-value { background-color: var(--card-background); color: var(--text-light); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }\n\n    .content-section { margin-bottom: 20px; }\n    .content-section h3 { color: var(--secondary-color); margin-bottom: 10px; }\n    .content-section p { color: var(--text-light); line-height: 1.6; }\n\n    @media (max-width: 768px) {\n        .timeline-header { display: none; }\n        .timeline-item { flex-direction: column; align-items: stretch; gap: 8px; }\n        .timeline-item strong {\n            min-width: auto; text-align: center; background-color: var(--secondary-color);\n            color: var(--card-background); padding: 6px 10px; border-radius: 6px;\n        }\n        .timeline-box { text-align: left; }\n        .resume-sections { grid-template-columns: 1fr; gap: 20px; }\n        \n        .tab-btn { min-width: 70px; padding: 12px 15px; font-size: 0.8rem; }\n        .tab-content { padding: 10px; }\n\n        /* Em telas menores, a toolbar costuma crescer um pouco */\n        :root { --tab-toolbar-h: 52px; }\n    }\n\n    @media (max-width: 480px) {\n        .main-content { flex-direction: column; }\n        .animal-details-frame { width: 100%; height: auto; }\n        .content-wrapper, .text-content { height: auto; }\n        .pop-up-menu { width: 85%; }\n        .tab-btn { min-width: 60px; padding: 10px 12px; font-size: 0.75rem; }\n        .tab-content { padding: 10px; }\n    }\n\n    .chart-container {\n        position: relative; width: 100%; max-height: 500px; margin-top: 2rem;\n        display: flex; justify-content: center; align-items: center;\n    }\n\n    /* Pop-up de alerta */\n    .alert-popup {\n        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);\n        background-color: #fff; color: #333; padding: 15px 20px; border-radius: 8px;\n        box-shadow: 0 4px 12px rgba(0,0,0,0.2);\n        display: flex; align-items: center;\n        opacity: 0; visibility: hidden;\n        transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;\n        z-index: 1000; min-width: 250px;\n    }\n    .alert-popup.success, .alert-popup.error { color: var(--secondary-color); }\n    .alert-popup.show { opacity: 1; visibility: visible; }\n    .alert-icon { font-size: 12px; font-weight: 400; }\n\n    i { color: var(--secondary-color); }\n    \n    /* Botões de ação genéricos */\n    .action-button-container { position: absolute; bottom: 20px; right: 20px; z-index: 10; }\n    .action-button {\n        background-color: var(--background-light); color: var(--primary-color);\n        padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;\n        font-size: 14px; text-decoration: none; width: 100px;\n        transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);\n    }\n    .action-button:hover { color: #fff; background-color: var(--primary-color); }\n    .cancel-button {\n        background-color: var(--background-light); color: var(--secondary-color);\n        padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;\n        font-size: 14px; text-decoration: none; width: 100px;\n        transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);\n    }\n    .cancel-button:hover { color: #fff; background-color: var(--secondary-color); }\n</style>\n`;\n\nreturn { style };\n"
+                },
+                "type": "n8n-nodes-base.code",
+                "typeVersion": 2,
+                "position": [
+                    -448,
+                    0
+                ],
+                "id": "7678ed7c-69a3-4cd6-a44f-df1301ee6e56",
+                "name": "Estilo"
+            },
+            {
+                "parameters": {
+                    "assignments": {
+                        "assignments": [
+                            {
+                                "id": "25a0b953-d8c5-4d02-b97c-609d88eb0022",
+                                "name": "img_logo",
+                                "value": "https://i.ibb.co/dwmMKwxD/kaniu-logo-laranja.png",
+                                "type": "string"
+                            },
+                            {
+                                "id": "6ddb1ed1-4e1c-469e-ace0-014a2d906a49",
+                                "name": "fav_icon",
+                                "value": "https://i.ibb.co/TxdLD7hF/kaniu-fav-icon-laranja.png",
+                                "type": "string"
+                            },
+                            {
+                                "id": "0f28499b-2cb0-4a7d-a827-0435c5e410f1",
+                                "name": "dog_font",
+                                "value": "https://raw.githubusercontent.com/viralatinhaz/kaniu/main/GoodDogCool.TTF",
+                                "type": "string"
+                            },
+                            {
+                                "id": "30b05b97-95a1-4c9e-9cfc-252a58a0f9bf",
+                                "name": "filter_satus",
+                                "value": "={{ $json.query.status }}",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "options": {}
+                },
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "position": [
+                    -672,
+                    0
+                ],
+                "id": "d01121fa-0ad9-4912-aeb3-f97160534271",
+                "name": "Constants",
+                "notesInFlow": true
             }
-
-            closeNascimentoPopup();
-        };
-
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Escape" || event.key === "Esc") {
-                closeMenu();
-                closeNascimentoPopup();
-                closePesagemPopup(); // Fechar pop-up de Pesagem no ESC
+        ],
+            "pinData": {
+        "Kaniu": [
+            {
+                "json": {
+                    "headers": {
+                        "host": "karah-n8n.uzd6db.easypanel.host",
+                        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                        "accept-encoding": "gzip, deflate, br, zstd",
+                        "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "cache-control": "no-cache",
+                        "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FCuRonzoh%2FasFsrkD3ctaA252N%2FdASUZE%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19cdaQtWm6ffyQUabVZV9V8H9khgHrTS%2Bo%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19dl8uoTfvV08HGt%2F%2F%2Bi%2FbyfoCcekyWENV%2FNnD9FBDHxGuvHjAXDiWcIa0e8c3gvPwpl15jp56dCw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19WX33CWMiADZdozdomlqjymRD6j%2FfkkHS8aPYdBOOtY4Zm9UQb8PGXAs2VgD%2BwnzrGaAVZerU4HJgHhVJwF8Hl%2F47BlJkUpuN8D5mfA16EOl1It1Uo5XJans3iWzvGWLAuGcOkaEdhS2Pp%2F0Yu57GRexcAT1RUzy8%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BfT4UJsr3q2pg4jel7JqSmPN1Nzu4zwnM0U3caEhzxr%2BbJcaysx5a65ftMOBjfAus4AcRDhwctgr5iL8JqmoBZnuRsqUUp%2Fvh6o3jO%2BpYNtF8UNa%2BxMpsUGzkhxOw79Lfcqk5XPShhsaihzrOkh%2Fhj1wD7MqMCZmA%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026%2336e98418-cb69-4c27-b2c6-02d98ffe06fd%22%2C%22%24sesid%22%3A%5B1759770384896%2C%220199ba7c-f1d9-7f76-9b18-b73d5454e7fa%22%2C1759770374616%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2F31.97.251.141%3A3000%2F%22%2C%22u%22%3A%22https%3A%2F%2Fkarah-n8n.uzd6db.easypanel.host%2Fsetup%22%7D%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FEJ%2BM2QJnCT5InD5A57fV3KTz%2BiPYBBw2GYKTdQdXsqBaGZW71MDfalulzyID3fvQmonuXb%2FPJzs5pMHmMb1nuW065dWLG2E22CUBM8y1%2BY93GDJKRxkfYeBxcVMYhPzpLv8IiP0PhjQ%3D%3D",
+                        "dnt": "1",
+                        "pragma": "no-cache",
+                        "priority": "u=0, i",
+                        "referer": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-beta?status=Abrigado",
+                        "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-ch-ua-platform": "\"Windows\"",
+                        "sec-fetch-dest": "document",
+                        "sec-fetch-mode": "navigate",
+                        "sec-fetch-site": "same-origin",
+                        "sec-fetch-user": "?1",
+                        "upgrade-insecure-requests": "1",
+                        "x-forwarded-for": "190.52.72.237",
+                        "x-forwarded-host": "karah-n8n.uzd6db.easypanel.host",
+                        "x-forwarded-port": "443",
+                        "x-forwarded-proto": "https",
+                        "x-forwarded-server": "03196bb10cdb",
+                        "x-real-ip": "190.52.72.237"
+                    },
+                    "params": {},
+                    "query": {
+                        "animal_id": "8bd4401b-a768-40d6-ba0d-79c5e7a05304"
+                    },
+                    "body": {},
+                    "webhookUrl": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-beta",
+                    "executionMode": "production"
+                }
             }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        initTabs();
-        initDatePopup();
-
-        document.getElementById('open-especie-menu').onclick = () =>
-            openMenu(${especies}, document.getElementById('open-especie-menu'), 'especie', 'especie');
-
-        document.getElementById('open-raca-menu').onclick = () =>
-            openMenu(${racas}, document.getElementById('open-raca-menu'), 'raca', 'raca');
-
-        document.getElementById('open-genero-menu').onclick = () =>
-            openMenu(${generos}, document.getElementById('open-genero-menu'), 'genero', 'genero');
-
-        document.getElementById('open-porte-menu').onclick = () =>
-            openMenu(${portes}, document.getElementById('open-porte-menu'), 'porte', 'porte');
-
-        document.getElementById('open-cor-menu').onclick = () =>
-            openMenu(${cores}, document.getElementById('open-cor-menu'), 'cor', 'cor');
-
-        document.getElementById('open-pelagem-menu').onclick = () =>
-            openMenu(${pelagens}, document.getElementById('open-pelagem-menu'), 'pelagem', 'pelagem');
-            
-        // Configura os botões do pop-up de pesagem (MANTIDO CASO O POP-UP SEJA USADO PARA 'NOVO')
-        document.getElementById('confirm-pesagem').onclick = updatePesagemRecord;
-        document.getElementById('cancel-pesagem').onclick = closePesagemPopup;
-
-
-        // Carrega a guia de resumo por padrão
-        document.querySelector('[data-tab="resumo"]').click();
-    });
-
-    function renderizarResumo(resumoData) {
-
-        if (!resumoData || resumoData.length === 0 ) {
-            document.getElementById('tab-resumo').innerHTML =
-                '<p class="no-data-message">Nenhum dado de resumo disponível.</p>';
-            return;
-        }
-
-        const dados = resumoData[0];
-
-        const secoes = {
-            'saude-geral-list': [
-                { label: 'Última avaliação', value: dados["Última avaliação"] || 'N/A' },
-                { label: 'Score Corporal', value: dados['Score Corporal'] !== null ? dados["Score Corporal"] : 'N/A' },
-                { label: 'Índice de saúde', value: dados['Índice de saúde'] || 'N/A' },
-                { label: 'Observações', value: dados['Observações'] || 'N/A' }
-            ],
-            'vacinacao-list': [
-                { label: 'Última vacinação', value: dados['Última vacinação'] || 'N/A' },
-                { label: 'Próxima vacinação', value: dados['Próxima vacinação'] || 'N/A' }
-            ],
-            'parasitas-list': [
-                { label: 'Última vermifugação', value: dados['Última vermifugação'] || 'N/A' },
-                { label: 'Próxima vermifugação', value: dados['Próxima vermifugação'] || 'N/A' },
-                { label: 'Última desparasitação', value: dados['Última desparasitação'] || 'N/A' },
-                { label: 'Próxima desparasitação', value: dados['Próxima desparasitação'] || 'N/A' }
-            ],
-            'peso-list': [
-                { label: 'Data da última pesagem', value: dados['Data pesagem'] || 'N/A' },
-                { label: 'Peso atual', value: dados['Último peso'] !== null ? dados["Último peso"] + ' kg' : 'N/A' },
-                { label: 'Peso anterior', value: dados['Peso anterior'] !== null ? dados["Peso anterior"] + ' kg' : "N/A" },
-                { label: 'Variação de peso', value: dados['Variação de peso'] || 'N/A' }
+        ]
+    },
+    "connections": {
+        "Kaniu": {
+            "main": [
+                [
+                    {
+                        "node": "Constants",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
             ]
-        };
-
-        for (const [id, itens] of Object.entries(secoes)) {
-            const container = document.getElementById(id);
-
-            if (container) {
-                container.innerHTML = ''; // limpa antes
-                itens.forEach(item => {
-                    const itemHTML =
-                        '<div class="resume-item"><strong>' + item.label + ':</strong> ' +
-                        '<span class="resume-value">' + item.value + '</span></div>';
-                    container.innerHTML += itemHTML;
-                });
-            }
+        },
+        "Get Animals": {
+            "main": [
+                [
+                    {
+                        "node": "Empty",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "List Animals": {
+            "main": [
+                [
+                    {
+                        "node": "Animal Statuses",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Tables",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Details": {
+            "main": [
+                [
+                    {
+                        "node": "Details Page",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Sort": {
+            "main": [
+                [
+                    {
+                        "node": "Combine",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Empty": {
+            "main": [
+                [
+                    {
+                        "node": "Animals List Page",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Sort",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Combine": {
+            "main": [
+                [
+                    {
+                        "node": "Animals List Page",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Animals List Page": {
+            "main": [
+                [
+                    {
+                        "node": "Respond",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Animal Statuses": {
+            "main": [
+                [
+                    {
+                        "node": "Get Animals",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tables": {
+            "main": [
+                [
+                    {
+                        "node": "Get Details",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Details Page": {
+            "main": [
+                [
+                    {
+                        "node": "Respond",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Icons": {
+            "main": [
+                [
+                    {
+                        "node": "List Animals",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Estilo": {
+            "main": [
+                [
+                    {
+                        "node": "Icons",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Constants": {
+            "main": [
+                [
+                    {
+                        "node": "Estilo",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
         }
-    }
-
-    function showAlert(message, type = 'success', duration = 1500) {
-        console.log('showAlert:' + message + ', ' + type + ', ' + duration);
-        const popup = document.getElementById('alert-popup');
-        const icon = document.getElementById('alert-icon');
-        const messageText = document.getElementById('alert-message');
-
-        // Limpa classes anteriores e adiciona a nova
-        popup.className = 'alert-popup';
-        popup.classList.add(type);
-        popup.classList.add('show');
-        
-        // Define o texto da mensagem
-        messageText.textContent = message;
-
-        // Limpa e define o conteúdo do ícone
-        //icon.innerHTML = '';
-        //icon.classList.add(type);
-
-        // Define um temporizador para esconder o pop-up
-        setTimeout(() => {
-            popup.classList.remove('show');
-        }, duration);
-    }
-</script>
-
-<script>
-      // Função para simular o início da criação de um novo registro
-    function newRecord(tabId) {
-        showAlert('Iniciando a criação de um novo registro em: ' + tabId, 'info', 2500);
-        // Coloque aqui a lógica para abrir um pop-up/formulário 
-        // para a criação do novo item para a guia (tabId)
-    }
-</script>
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adote ${animal.nome}</title>
-</head>
-
-<body>
-    <header class="header">
-        <div class="header-content">
-            <img class="header-logo" src="${img_logo}" alt="Logo Kaniu"/>
-        </div>
-    </header>
-    <div class="main-content">
-        <div class="animal-details-frame">
-            <a href="${app_url}" class="back-button">Voltar</a>
-            <div class="content-wrapper">
-                <div class="animal-photo-container">
-                    <img class="animal-photo" src="${animal.foto}" alt="Foto de ${animal.nome}" />
-                </div>
-                <div class="text-content">
-                    <div class="animal-header">
-                        <h1>${animal.nome}</h1>
-                    </div>
-                    <div class="button-container">
-                        ${iconesAnimal}
-                    </div>
-                </div>
-            </div>
-            <div class="details-container">
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <strong>Espécie:</strong>
-                        <button class="detail-button" id="open-especie-menu">${animal.especie}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Raça:</strong>
-                        <button class="detail-button" id="open-raca-menu">${animal.raça}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Gênero:</strong>
-                        <button class="detail-button" id="open-genero-menu">${animal.sexo}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Porte:</strong>
-                        <button class="detail-button" id="open-porte-menu">${animal.porte}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Cor:</strong>
-                        <button class="detail-button" id="open-cor-menu">${animal.cor}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Pelagem:</strong>
-                        <button class="detail-button" id="open-pelagem-menu">${animal.pelagem}</button>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Data de Nascimento:</strong>
-                        <button id="open-nascimento-menu" class="detail-button">${animal.nascimento ? animal.nascimento : 'Definir Data'}</button>
-                    </div>
-                    <div class="detail-item"><strong>Faixa Etária:</strong> <span class="characteristic-box">${animal.faixa_etaria}</span></div>
-                    <div class="detail-item"><strong>Idade:</strong> <span class="characteristic-box">${ageString}</span></div>
-                    <div class="detail-item"><strong>Peso:</strong> <span class="characteristic-box">${formatValue(animal.peso)} kg</span></div>
-                    <div class="detail-item"><strong>Altura:</strong> <span class="characteristic-box">${formatValue(animal.altura)} cm</span></div>
-                    <div class="detail-item"><strong>Comprimento:</strong> <span class="characteristic-box">${formatValue(animal.comprimento)} cm</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-container">
-            <div class="tab-nav">
-                <button class="tab-btn active" data-tab="resumo">Resumo</button>
-                <button class="tab-btn" data-tab="eventos">Histórico</button>
-                <button class="tab-btn" data-tab="avaliacoes">Avaliação</button>
-                <button class="tab-btn" data-tab="pesagens">Pesagem</button>
-                <button class="tab-btn" data-tab="imunizacoes">Imunização</button>
-                <button class="tab-btn" data-tab="tratamentos">Tratamento</button>
-                <button class="tab-btn" data-tab="arquivos">Arquivos</button>
-            </div>
-
-            <div class="tab-content-area">
-                <div id="tab-resumo" class="tab-content">
-                    <div class="resume-sections">
-                        <div class="resume-section">
-                            <h3 class="resume-title">Saúde Geral</h3>
-                            <div id="saude-geral-list" class="resume-list">
-                            </div>
-                        </div>
-
-                        <div class="resume-section">
-                            <h3 class="resume-title">Vacinação</h3>
-                            <div id="vacinacao-list" class="resume-list">
-                            </div>
-                        </div>
-
-                        <div class="resume-section">
-                            <h3 class="resume-title">Controle de Parasitas</h3>
-                            <div id="parasitas-list" class="resume-list">
-                            </div>
-                        </div>
-
-                        <div class="resume-section">
-                            <h3 class="resume-title">Avaliação e Peso</h3>
-                            <div id="peso-list" class="resume-list">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="tab-eventos" class="tab-content"></div>
-                <div id="tab-avaliacoes" class="tab-content"></div>
-                <div id="tab-pesagens" class="tab-content"></div>
-                <div id="tab-imunizacoes" class="tab-content"></div>
-                <div id="tab-tratamentos" class="tab-content"></div>
-                <div id="tab-arquivos" class="tab-content"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="overlay" class="overlay"></div>
-    <div id="pop-up-menu" class="pop-up-menu">
-        <span class="pop-up-close" onclick="closeMenu()">&times;</span>
-        <h2>Selecione a Espécie</h2>
-        <div id="pop-up-options-container" class="pop-up-options-container">
-        </div>
-    </div>
-
-    <div id="pop-up-nascimento" class="pop-up-menu" style="width: 280px; padding: 15px;">
-        <span class="pop-up-close" onclick="document.getElementById('pop-up-nascimento').style.display='none'; document.getElementById('overlay').style.display='none';">&times;</span>
-        <h2 id="nascimento-popup-title">Alterar Data de Nascimento</h2>
-        <div class="pop-up-options-container" style="align-items: center; width: 100%; box-sizing: border-box;">
-            <input type="date" id="nascimento-input" class="date-input" style="width: 100%;" />
-        </div>
-        <div class="pop-up-actions" style="margin-top: 5px;">
-            <button id="confirm-nascimento" class="detail-button" style="background-color: var(--primary-color); color: var(--card-background); flex: 1; max-width: 100px;">Salvar</button>
-            <button id="cancel-nascimento" class="detail-button" style="flex: 1; max-width: 100px;">Cancelar</button>
-        </div>
-    </div>
-    
-    <div id="alert-popup" class="alert-popup">
-        <span id="alert-message"></span>
-    </div>
-
-    <div id="pop-up-pesagem" class="pop-up-menu" style="width: 280px; padding: 40px;">
-        <span class="pop-up-close" onclick="closePesagemPopup()">&times;</span>
-        <h2>Pesagem</h2>
-        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 5px;">
-            <input type="hidden" id="pesagem-id" />
-            
-            <label style="font-size: 0.8rem; color: var(--text-dark);">Data da Medição</label>
-            <input type="date" id="pesagem-data-input" class="date-input" />
-            
-            <label style="font-size: 0.8rem; color: var(--text-dark);">Peso (kg)</label>
-            <input type="number" step="0.1" id="pesagem-peso-input" class="date-input" placeholder="Ex: 5.2" />
-        </div>
-        <div class="pop-up-actions" style="margin-top: 5px;">
-            <button id="cancel-pesagem" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
-            <button id="confirm-pesagem" class="action-button" flex: 1; max-width: 100px;">Salvar</button>
-        </div>
-    </div>
-    <script>
-        (function () {
-          function setToolbarOffsets() {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-              const toolbar = tab.querySelector('.new-button-fixed');
-              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;
-              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;
-              const offset = toolbarH + padTop;
-              tab.style.setProperty('--tab-header-offset', offset + 'px');
-            });
-          }
-        
-          // inicial + resize
-          window.addEventListener('load', setToolbarOffsets);
-          window.addEventListener('resize', setToolbarOffsets);
-        
-          // se a barra “Novo” mudar de altura (quebrar linha, fonte, etc.)
-          const ro = new ResizeObserver(setToolbarOffsets);
-          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));
-        })();
-    </script>
-
-    <script>
-        (function () {
-          function setToolbarOffsets() {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-              const toolbar = tab.querySelector('.new-button-fixed');
-              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;
-              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;
-              const offset = toolbarH + padTop;
-              tab.style.setProperty('--tab-header-offset', offset + 'px');
-            });
-          }
-        
-          window.addEventListener('load', setToolbarOffsets);
-          window.addEventListener('resize', setToolbarOffsets);
-        
-          const ro = new ResizeObserver(setToolbarOffsets);
-          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));
-        })();
-    </script>
-
-</body>
-
-</html>
-`;
-
-return [{ json: { html: html } }];
+    },
+    "active": true,
+        "settings": {
+        "executionOrder": "v1"
+    },
+    "versionId": "5f762d56-5753-478b-b6b0-9e2efe480e1c",
+        "meta": {
+        "templateCredsSetupCompleted": true,
+            "instanceId": "c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026"
+    },
+    "id": "lg05b2UeiPYFjKzu",
+        "tags": []
+}
