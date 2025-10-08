@@ -1,0 +1,551 @@
+/* ==========================================================================
+// 1. IMPORTAÇÕES E FONTES
+// ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+@font-face {
+    font-family: 'GoodDog';
+    src: url('https://raw.githubusercontent.com/viralatinhaz/kaniu/main/GoodDog.TTF') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ==========================================================================
+// 2. VARIÁVEIS CSS (ROOT)
+// ========================================================================== */
+:root {
+    /* Cores */
+    --primary-color: #FF6600;
+    --secondary-color: #5A5D7F;
+    --background-light: #F4F6F9;
+    --card-background: #FFFFFF;
+    --warning-color: #C62828;
+    --text-dark: #333333;
+    --text-light: #666666;
+    --text-faded: #999999;
+    --border-color: #E0E0E0;
+
+    /* Alturas/offsets para sticky e layout de guias */
+    --tab-toolbar-h: 44px; /* altura da barra “Novo” */
+    --tab-content-pt: 0px; /* padding-top da área rolável (.tab-content) */
+    --tab-header-offset: calc(var(--tab-toolbar-h) + var(--tab-content-pt));
+}
+
+/* ==========================================================================
+// 3. ESTILOS GERAIS DE LAYOUT E ESTRUTURA
+// ========================================================================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+    height: calc(100% - 60px); /* Ajustar com base na altura real do header se necessário */
+}
+
+/* Scrollbar para elementos roláveis */
+.details-container::-webkit-scrollbar { width: 14px; }
+.details-container::-webkit-scrollbar-track { background: var(--background-light); border-radius: 10px; }
+.details-container::-webkit-scrollbar-thumb {
+    background-color: var(--secondary-color);
+    border-radius: 10px;
+    border: 4px solid var(--background-light);
+    background-clip: padding-box;
+}
+
+i { color: var(--secondary-color); }
+
+/* ==========================================================================
+// 4. HEADER (TOPO DA PÁGINA)
+// ========================================================================== */
+.header {
+    width: 100%;
+    padding: 10px 20px;
+    background-color: var(--card-background);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 5px;
+}
+
+.header-logo { height: 32px; }
+
+.header-title {
+    font-family: 'GoodDog', sans-serif;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* ==========================================================================
+// 5. DETALHES DO ANIMAL (Animal Details Frame)
+// ========================================================================== */
+.animal-details-frame {
+    background-color: var(--card-background);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 20px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.animal-photo-container {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.animal-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.text-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex: 1;
+    height: 100px;
+}
+
+.animal-header h1 {
+    font-family: 'GoodDog', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin: 0;
+    text-align: left;
+}
+
+.details-container {
+    overflow-y: auto;
+    flex: 1;
+    padding: 0 10px 10px 10px;
+    scrollbar-width: regular;
+    scrollbar-color: var(--secondary-color) var(--background-light);
+}
+
+.details-grid { display: flex; flex-direction: column; gap: 5px; width: 100%; text-align: left; }
+
+.detail-item {
+    background-color: transparent;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+}
+.detail-item strong { font-size: 0.85rem; color: var(--text-dark); }
+.characteristic-box { background-color: transparent; color: var(--text-light); font-size: 0.8rem; font-weight: 500; }
+
+/* Botão de Retorno (Back Button) */
+.back-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: var(--background-light);
+    border: none;
+    color: var(--primary-color);
+    padding: 5px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-weight: 500;
+    z-index: 10;
+}
+.back-button:hover { background-color: var(--primary-color); color: var(--card-background); }
+
+/* ==========================================================================
+// 6. SISTEMA DE GUIAS (TABS)
+// ========================================================================== */
+.tab-container {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    background-color: var(--background-light);
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    flex: 1;
+}
+
+/* Navegação das Guias */
+.tab-nav {
+    display: flex; background-color: var(--background-light);
+    border-bottom: 2px solid var(--border-color);
+    padding: 0; margin: 0; flex-shrink: 0;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+    flex: 1; min-width: 80px; padding: 15px 20px;
+    background-color: transparent; border: none; border-bottom: 3px solid transparent;
+    color: var(--text-light); font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    transition: all 0.3s ease; white-space: nowrap; position: relative; text-align: center;
+}
+.tab-btn:hover { background-color: rgba(255, 255, 255, 0.5); color: var(--secondary-color); }
+.tab-btn.active { background-color: var(--card-background); color: var(--secondary-color); border-bottom-color: var(--primary-color); font-weight: 600; }
+
+/* Área de Conteúdo */
+.tab-content-area {
+    flex: 1; background-color: var(--card-background);
+    overflow: hidden; position: relative; font-size: 0.7rem;
+}
+
+.tab-content {
+    display: none; height: 100%;
+    padding: var(--tab-content-pt) 20px 20px;
+    overflow-y: auto; box-sizing: border-box;
+    position: relative; min-height: 200px;
+}
+.tab-content.active { display: block; }
+
+/* Scrollbar do Conteúdo */
+.tab-content::-webkit-scrollbar { width: 8px; }
+.tab-content::-webkit-scrollbar-track { background: var(--background-light); border-radius: 4px; }
+.tab-content::-webkit-scrollbar-thumb { background-color: var(--text-faded); border-radius: 4px; }
+.tab-content::-webkit-scrollbar-thumb:hover { background-color: var(--secondary-color); }
+
+/* Toolbar “Novo” (sticky) */
+.new-button-fixed {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--card-background);
+    padding: 8px; min-height: var(--tab-toolbar-h);
+    display: flex; align-items: center; justify-content: flex-end;
+}
+.new-button-fixed .action-button {
+    background-color: var(--primary-color); color: #fff;
+    font-size: 0.85rem; padding: 6px 12px; border: none; border-radius: 6px;
+    cursor: pointer; transition: background 0.2s;
+}
+.new-button-fixed .action-button:hover { background-color: #3a4ac0; }
+
+/* ==========================================================================
+// 7. TABELAS
+// ========================================================================== */
+.tab-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 0;
+}
+
+/* Header Fixo (Sticky) */
+.tab-table thead {
+    position: sticky;
+    top: var(--tab-header-offset);
+    z-index: 5;
+    background: var(--background-light);
+}
+
+/* Ajuste de Offset para Guias Sem Toolbar */
+#tab-resumo .tab-table thead,
+#tab-qualquer-guia-sem-toolbar .tab-table thead { top: 0; }
+
+/* Linha sutil sob o header */
+.tab-table thead th::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* Células e Estilos */
+.tab-table th, .tab-table td {
+    padding: 12px 15px; text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.tab-table thead th {
+    position: relative;
+    background-color: var(--background-light);
+    font-weight: 600; color: var(--text-dark);
+}
+.tab-table td { color: var(--text-light); }
+.tab-table tbody tr:hover { background-color: rgba(90, 93, 127, 0.03); }
+
+/* Coluna de Ações */
+.action-cell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 20px !important;
+    min-width: 40px;
+    width: auto;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+// 8. RESUMO E TIMELINE
+// ========================================================================== */
+.timeline-container { padding: 20px; }
+.timeline-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 0 15px; }
+.timeline-column-title { flex: 1; font-weight: 600; color: var(--secondary-color); text-align: center; }
+.timeline-column-title.date-column { min-width: 100px; text-align: left; }
+.timeline-grid { display: flex; flex-direction: column; gap: 8px; }
+.timeline-item { background-color: var(--background-light); padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px; }
+.timeline-item strong { min-width: 100px; color: var(--text-dark); font-weight: 500; }
+.timeline-box { flex: 1; background-color: var(--card-background); color: var(--text-light); padding: 6px 10px; border-radius: 6px; font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Seções de Resumo */
+.resume-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 10px; }
+.resume-section { margin-bottom: 0; }
+.resume-title { color: var(--secondary-color); font-weight: 600; margin: 0 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid var(--background-light); }
+.resume-list { display: flex; flex-direction: column; gap: 8px; }
+.resume-item { background-color: var(--background-light); padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+.resume-item strong { font-size: 0.85rem; color: var(--text-dark); font-weight: 500; }
+.resume-value { background-color: var(--card-background); color: var(--text-light); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+
+.content-section { margin-bottom: 20px; }
+.content-section h3 { color: var(--secondary-color); margin-bottom: 10px; }
+.content-section p { color: var(--text-light); line-height: 1.6; }
+
+/* Gráficos */
+.chart-container {
+    position: relative; width: 100%; max-height: 500px; margin-top: 2rem;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* ==========================================================================
+// 9. BOTÕES E COMPONENTES DE INTERAÇÃO
+// ========================================================================== */
+.detail-button {
+    display: inline-block;
+    background-color: var(--background-light);
+    border: none;
+    color: var(--secondary-color);
+    padding: 5px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.detail-button:hover { background-color: var(--secondary-color); color: var(--card-background); }
+
+.button-container { display: flex; gap: 5px; flex-shrink: 0; }
+
+/* Botões de Ação Genéricos (Fora de Pop-up) */
+.action-button-container { position: absolute; bottom: 20px; right: 20px; z-index: 10; }
+.action-button {
+    background-color: var(--background-light); color: var(--primary-color);
+    padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;
+    font-size: 14px; text-decoration: none; width: 100px;
+    transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.action-button:hover { color: #fff; background-color: var(--primary-color); }
+
+.cancel-button {
+    background-color: var(--background-light); color: var(--secondary-color);
+    padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;
+    font-size: 14px; text-decoration: none; width: 100px;
+    transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.cancel-button:hover { color: #fff; background-color: var(--secondary-color); }
+
+/* Botões de Ícone */
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-dark, #333);
+}
+.icon-button:hover { color: var(--primary-color, #FF6600); }
+.delete-button i { color: #e53935; font-size: 1.1rem; }
+.delete-button:hover i { color: #ff0000; }
+
+/* Botões de Imagem com Tooltip */
+.img-button-wrapper {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+.img-button { width: 24px; height: 24px; object-fit: contain; }
+
+.img-button-wrapper .tooltip {
+    visibility: hidden; width: max-content;
+    background-color: var(--secondary-color); color: var(--card-background);
+    text-align: center; border-radius: 6px; padding: 5px 10px;
+    position: absolute; z-index: 1; bottom: 150%; left: 50%; transform: translateX(-50%);
+    opacity: 0; transition: opacity 0.3s; font-size: 0.75rem; white-space: nowrap;
+}
+.img-button-wrapper .tooltip::after {
+    content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+    border-width: 5px; border-style: solid;
+    border-color: var(--secondary-color) transparent transparent transparent;
+}
+.img-button-wrapper:hover .tooltip { visibility: visible; opacity: 1; }
+
+
+/* ==========================================================================
+// 10. POP-UPS E OVERLAYS
+// ========================================================================== */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+    z-index: 20; display: none;
+}
+
+.pop-up-menu {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background-color: var(--card-background); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 15px; z-index: 30; display: none; flex-direction: column; gap: 10px;
+    max-height: 80vh; overflow-y: auto; width: 300px;
+}
+.pop-up-menu h2 { margin: 0 0 5px 0; font-size: 1rem; color: var(--secondary-color); text-align: center; }
+.pop-up-close { position: absolute; top: 5px; right: 10px; font-size: 1.2rem; cursor: pointer; color: var(--text-faded); }
+
+/* Opções de Pop-up (Menu de Seleção) */
+.pop-up-options-container { display: flex; flex-direction: column; gap: 5px; }
+.pop-up-option {
+    padding: 8px 12px; background-color: var(--background-light); border-radius: 6px;
+    cursor: pointer; transition: all 0.2s ease; font-weight: 500; font-size: 0.8rem;
+}
+.pop-up-option:hover, .pop-up-option.selected { background-color: var(--secondary-color); color: var(--card-background); }
+
+/* Formulário de Data (Nascimento/Geral) */
+.date-input { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; font-size: 14px; }
+#pop-up-nascimento {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background-color: var(--card-background); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 15px; z-index: 30; display: none; flex-direction: column; gap: 10px; width: 250px;
+}
+
+/* Botões de Ação do Pop-up (Genéricos) */
+.pop-up-actions { display: flex; justify-content: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+.pop-up-actions .confirm-button, .pop-up-actions .cancel-button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; flex: 1; max-width: 120px; }
+.pop-up-actions .confirm-button { background-color: #4CAF50; color: #fff; }
+.pop-up-actions .cancel-button { background-color: #ccc; }
+
+/* Botões Específicos do Pop-up de Exclusão */
+.pop-up-actions .cancel-button {
+    background-color: var(--card-background);
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+    transition: all 0.2s ease;
+}
+.pop-up-actions .cancel-button:hover {
+    background-color: var(--secondary-color);
+    color: var(--card-background);
+}
+.pop-up-actions .delete-button {
+    background-color: var(--card-background);
+    color: var(--warning-color);
+    border: 1px solid var(--warning-color);
+    transition: all 0.2s ease;
+}
+.pop-up-actions .delete-button:hover {
+    background-color: var(--warning-color);
+    color: var(--card-background);
+}
+.pop-up-actions .cancel-button,
+.pop-up-actions .delete-button { border-radius: 6px; }
+
+/* Pequeno Pop-up (Alertas ou Mensagens Breves) */
+.small-pop-up { min-height: auto; padding: 16px; gap: 12px; flex-direction: column; justify-content: flex-start; }
+.small-pop-up h2 { font-size: 16px; margin-bottom: 12px; }
+.pop-up-content { margin-bottom: 16px; }
+
+.popup-button {
+    background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 8px;
+    padding: 6px 14px; cursor: pointer; font-size: 14px; transition: background 0.2s;
+}
+.popup-button:hover { background-color: #e0e0e0; }
+
+/* Pop-up de Alerta/Notificação */
+.alert-popup {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background-color: #fff; color: #333; padding: 15px 20px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    display: flex; align-items: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    z-index: 1000; min-width: 250px;
+}
+.alert-popup.success, .alert-popup.error { color: var(--secondary-color); }
+.alert-popup.show { opacity: 1; visibility: visible; }
+.alert-icon { font-size: 12px; font-weight: 400; }
+
+/* ==========================================================================
+// 11. MEDIA QUERIES (RESPONSIVIDADE)
+// ========================================================================== */
+@media (max-width: 768px) {
+    .timeline-header { display: none; }
+    .timeline-item { flex-direction: column; align-items: stretch; gap: 8px; }
+    .timeline-item strong {
+        min-width: auto; text-align: center; background-color: var(--secondary-color);
+        color: var(--card-background); padding: 6px 10px; border-radius: 6px;
+    }
+    .timeline-box { text-align: left; }
+    .resume-sections { grid-template-columns: 1fr; gap: 20px; }
+    
+    .tab-btn { min-width: 70px; padding: 12px 15px; font-size: 0.8rem; }
+    .tab-content { padding: 10px; }
+
+    /* Ajuste de Altura da Toolbar para Telas Menores */
+    :root { --tab-toolbar-h: 52px; }
+}
+
+@media (max-width: 480px) {
+    .main-content { flex-direction: column; }
+    .animal-details-frame { width: 100%; height: auto; }
+    .content-wrapper, .text-content { height: auto; }
+    .pop-up-menu { width: 85%; }
+    .tab-btn { min-width: 60px; padding: 10px 12px; font-size: 0.75rem; }
+    .tab-content { padding: 10px; }
+}
