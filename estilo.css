@@ -1,5 +1,3 @@
-const style = `
-<style>
 /* ==========================================================================
 // 1. IMPORTAÇÕES E FONTES
 // ========================================================================== */
@@ -355,7 +353,6 @@ button:focus {
     cursor: pointer;
     transition: background 0.2s;
 }
-.new-button-fixed .action-button:hover {}
 
 /* ==========================================================================
 // 7. TABELAS
@@ -1031,7 +1028,3 @@ button:focus {
     width: 100%;
 }
 
-</style>
-`;
-
-return { style };
