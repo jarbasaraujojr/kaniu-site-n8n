@@ -3,6 +3,7 @@
 /* Sistema de gestão de abrigos de animais
 /* Página do animal
 /**********************************************/
+
 // Variáveis de trabalho
 const animal = $('Get Details').first().json;
 const especies = JSON.stringify($('Tables').first().json.especies);
@@ -12,10 +13,9 @@ const portes = JSON.stringify($('Tables').first().json.portes);
 const cores = JSON.stringify($('Tables').first().json.cores);
 const pelagens = JSON.stringify($('Tables').first().json.pelagens);
 const icones = $('Icons').first().json;
+const canil_id = $('Vars').first().json.canil_id;
 
-const app_url = $('Kaniu').first().json.webhookUrl.split('webhook/')[
-  1
-];
+const app_url = $('Vars').first().json.webhookUrl.split('webhook/')[1];
 const img_logo = $('Constants').item.json.img_logo;
 
 // Códogo para obter o arquivo de estilo
@@ -38,15 +38,14 @@ const calculateAge = (birthDate) => {
 
     if (days < 0) {
         months--;
-        const prevMonth = new Date(today.getFullYear(), today.getMonth(),
-    0);
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
         days = today.getDate() + (prevMonth.getDate() - dob.getDate());
-  }
+    }
 
     if (months < 0) {
         years--;
         months = 12 + months;
-  }
+    }
 
     let txt_anos = years == 0 ? '' : years == 1 ? '1 ano' : years + ' anos';
     let txt_meses = months == 0 ? '' : months == 1 ? '1 mês' : months + ' meses';
@@ -60,16 +59,17 @@ const ageString = calculateAge(animal.nascimento);
 
 // Função para retornar um ícone
 function getIcon(icon_name) {
-    const iconValue = icones[icon_name
-  ];
+    const iconValue = icones[icon_name];
 
     if (!iconValue) {
         return '<i class="fa-solid fa-notdef"></i>'; // error icon
-  }
+    }
 
     return '<i class="fa-solid fa-' + iconValue + '"></i>';
 }
+
 //return {"icone": getIcon('vacina')};
+
 // Função para gerar o HTML dos ícones com base nas propriedades do animal
 function animalStatusIcons(animal) {
     let iconsHtml = '';
@@ -77,22 +77,37 @@ function animalStatusIcons(animal) {
     // Verifica se o animal está castrado e adiciona o ícone se for verdade
     if (animal.castrado) {
         iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-scissors"></i><span class="tooltip">Castrado</span></div>';
-  }
-  // Verifica se o animal está vacinado
+    }
+
+    // Verifica se o animal está vacinado
     if (animal.vacinado) {
         iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-syringe"></i><span class="tooltip">Vacinado</span></div>';
-  }
-  // Verifica se o animal está vermifugado
+    }
+
+    // Verifica se o animal está vermifugado
     if (animal.vermifugado) {
         iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-pills"></i><span class="tooltip">Vermifugado</span></div>';
-  }
-  // Verifica se o animal está desparasitado
+    }
+
+    // Verifica se o animal está desparasitado
     if (animal.desparasitado) {
         iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-bug-slash"></i><span class="tooltip">Desparasitado</span></div>';
-  }
+    }
 
     return iconsHtml;
 }
+
+function animalPhoto(especie = "Vazio") {
+  const pic_url = {
+    "Cachorro": "https://i.ibb.co/Z6dPncCH/pic-dog.png",
+    "Gato": "https://i.ibb.co/9dWLkZs/pic-cat.png",
+    "Vazio": "https://i.ibb.co/KpVTx4vK/pic-none.png"
+  };
+
+  // Retorna a imagem correspondente ou a de "Vazio" como fallback
+  return pic_url[especie] || pic_url["Vazio"];
+}
+
 // Gera o html dos ícones indicando o status do animall
 const iconesAnimal = animalStatusIcons(animal);
 
@@ -100,755 +115,22 @@ const iconesAnimal = animalStatusIcons(animal);
 // O CÓDIGO DO N8N TERMINA AQUI. A PARTIR DAQUI VEM O HTML E O JAVASCRIPT
 // QUE SERÃO EXECUTADOS NO NAVEGADOR.
 // =========================================================================
+
 // Gera o html principal da página
 const html = `
 <!DOCTYPE html>
 <html lang="pt-br">
 
-${estilo.style
-}
+${estilo.style}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 <script src="https://kit.fontawesome.com/78b7eb0968.js" crossorigin="anonymous"></script>
 
-<script>
-    const cachedData = {};
-    
-    // =========================================================================
-// FUNÇÕES DE LÓGICA DO POP-UP DE PESAGEM (AS FUNÇÕES DE ABRIR E CLIQUE FORAM REMOVIDAS/SIMPLIFICADAS)
-// =========================================================================
-// Função de tratamento do clique na linha da tabela.
-// É esperado que a linha tenha o atributo data-record com o JSON do item.
-    function handlePesagemClick(rowElement) {
-  // 1. Obtém a string JSON com as entidades &quot;
-        const itemDataString = rowElement.getAttribute('data-record');
-        
-        // 2. Substitui as entidades &quot; pelas aspas duplas reais (")
-        const safeJsonString = itemDataString.replace(/&quot;/g, '"');
-  // 3. Faz o parse da string JSON para um objeto
-        const record = JSON.parse(safeJsonString);
-        
-        // 4. Abre o pop-up com o registro
-        openPesagemPopup(record);
-}
-// Função para fechar o pop-up da pesagem
-    function closePesagemPopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('pop-up-pesagem').style.display = 'none';
-        // Limpa a mensagem de erro
-        const errorElement = document.getElementById('pop-up-pesagem').querySelector('.error-message-pesagem');
-        if (errorElement) {
-            errorElement.remove();
-  }
-}
-// Função para abrir o popup de pesagem (novo ou editar)
-    function openPesagemPopup(record = null) {
-        if (record) {
-    // Edição
-            document.getElementById('pesagem-id').value = record.id;
-            document.getElementById('pesagem-data-input').value = record.data;
-            document.getElementById('pesagem-peso-input').value = record.peso;
-  } else {
-    // Novo registro
-          document.getElementById('pesagem-id').value = "";
-          const today = new Date().toISOString().split('T')[
-      0
-    ]; // pega AAAA-MM-DD
-          document.getElementById('pesagem-data-input').value = today;
-          document.getElementById('pesagem-peso-input').value = "";
-  }
-    
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('pop-up-pesagem').style.display = 'flex';
-}
-// Função para salvar (update ou insert)
-    async function updatePesagemRecord() {
-        const id = document.getElementById('pesagem-id').value;
-        const data = document.getElementById('pesagem-data-input').value;
-        const peso = document.getElementById('pesagem-peso-input').value;
-    
-        const popup = document.getElementById('pop-up-pesagem');
-        const popupActions = popup.querySelector('.pop-up-actions');
-    
-        if (!data || !peso || isNaN(parseFloat(peso))) {
-            const errorElement = popup.querySelector('.error-message-pesagem');
-            if (errorElement) errorElement.remove();
-            popupActions.insertAdjacentHTML(
-                'beforebegin',
-                '<p class="error-message-pesagem" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">Preencha todos os campos corretamente.</p>'
-            );
-            return;
-  }
-    
-        try {
-            let payload = {
-                animal_id: '${animal.animal_id
-      }',
-                data: data,
-                peso: parseFloat(peso)
-    };
-    
-            let url = "";
-            if (id) {
-      // atualização
-                payload.tipo_registro = "pesagem";
-                payload.id_registro = id;
-                url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update";
-    } else {
-      // inclusão
-                url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-add-pesagem";
-    }
-    
-            const response = await fetch(url,
-    {
-                method: "POST",
-                headers: {
-        "Content-Type": "application/json"
-      },
-                body: JSON.stringify(payload)
-    });
-    
-            if (!response.ok) {
-                throw new Error("Falha ao salvar o registro de pesagem.");
-    }
-    
-            showAlert(id ? "Pesagem atualizada com sucesso!": "Pesagem incluída com sucesso!",
-    "success",
-    2000);
-    
-            cachedData['pesagens'
-    ] = null;
-            await fetchTabData('pesagens');
-  } catch (error) {
-            showAlert("Erro ao salvar a pesagem: " + error.message,
-    "error",
-    3000);
-  } finally {
-            closePesagemPopup();
-  }
-}
-// =========================================================================
-
-    async function fetchTabData(tabId) {
-        if (cachedData[tabId
-  ]) {
-            return;
-  }
-
-        const tabContentElement = document.getElementById('tab-' + tabId);
-        //tabContentElement.innerHTML = '<div class="loading-message">Carregando...</div>'; //teste
-
-        try {
-            const payload = {
-                tab_name: tabId,
-                animal_id: '${animal.animal_id
-      }'
-    };
-
-            const response = await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados",
-    {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-      },
-                body: JSON.stringify(payload)
-    });
-
-            if (!response.ok) {
-                throw new Error('Erro na resposta da rede: ' + response.statusText);
-    }
-
-            const data = await response.json();
-
-            // Trata a resposta do endpoint que agora retorna JSON com 'items' ou 'error'
-            if (data.error) {
-                tabContentElement.innerHTML = '<div class="no-data-message">' + data.error + '</div>';
-    } else if (tabId !== 'resumo' && (data.items.length == 0 || data.items[
-      0
-    ].id == null)) {
-                tabContentElement.innerHTML = '<div class="no-data-message">Nenhum item encontrado.</div>';
-    } else if (data.items) {
-      // Mapeamento de chaves para títulos de coluna amigáveis
-                const columnMappings = {
-                    'eventos': {
-                        'data': 'Data',
-                        'tipo': 'Tipo',
-                        'descricao': 'Descrição',
-                        'veterinario_nome': 'Veterinário'
-        },
-                    'pesagens': {
-                        'data': 'Data',
-                        'peso': 'Medição',
-                        'variacao': 'Variação'
-        },
-                    'avaliacoes': {
-                        'data': 'Data',
-                        'observacao': 'Observação',
-                        'veterinario_nome': 'Veterinário',
-                        'temperatura': 'Temp.',
-                        'score': 'Score',
-                        'peso': 'Peso',
-                        'nota': 'Nota'
-        },
-                    'imunizacoes': {
-                        'data_exibicao': 'Data',
-                        'tipo': 'Tipo',
-                        'nome_imunizante': 'Imunizante',
-                        'veterinario_nome': 'Veterinário',
-                        'aplicada': 'Aplicada'
-        },
-                    'tratamentos': {
-                        'data': 'Data',
-                        'veterinario_nome': 'Veterinário',
-                        'medicamentos': 'Medicamentos',
-                        'finalizada': 'Finalizado'
-        },
-                    'arquivos': {
-                        'data': 'Data',
-                        'nome': 'Nome',
-                        'observacao': 'Observação',
-                        'url': 'Visualizar'
-        }
-      };
-
-                const excludedKeys = ['id', 'animal_id', 'veterinario_id', 'concluido', 'programado', 'atrasado'
-      ];
-
-// Função para renderizar a tabela
-const renderTable = (items, tabId) => {
-    const currentMapping = columnMappings[tabId
-        ] || {};
-    const headers = Object.keys(items[
-          0
-        ]).filter(key => !excludedKeys.includes(key));
-
-    let tableHTML = '<table class="tab-table"><thead><tr>';
-
-    // Cabeçalhos
-    headers.forEach(header => {
-        const title = currentMapping[header
-          ] || header.charAt(0).toUpperCase() + header.slice(1);
-        tableHTML += '<th>' + title + '</th>';
-        });
-
-    // 🔸 Coluna extra (sem título) para ações
-    if (tabId !== 'resumo') {
-        tableHTML += '<th style="min-width:40px; width:auto;"></th>';
-        }
-
-    tableHTML += '</tr></thead><tbody>';
-
-    // Linhas
-    items.forEach(item => {
-        let rowAttributes = '';
-
-        // Permite clique na linha da aba Pesagens
-        if (tabId === 'pesagens') {
-            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
-            rowAttributes = 'data-record="'+safeJson+'" onclick="handlePesagemClick(this)" style="cursor:pointer;"';
-          }
-
-        tableHTML += '<tr '+rowAttributes+'>';
-
-        // Células padrão
-        headers.forEach(header => {
-            let formattedContent = '';
-            const cellContent = item[header
-            ];
-
-            if (['data', 'data_exibicao'
-            ].includes(header) && cellContent) {
-                const [year, month, day
-              ] = cellContent.split('-');
-                formattedContent = day + '/' + month + '/' + year;
-            } else if (header === 'peso' && cellContent !== null) {
-                formattedContent = cellContent + ' kg';
-            } else if (header === 'medicamentos' && Array.isArray(cellContent)) {
-                formattedContent = '<ul>' + cellContent.map(med => '<li>' + med + '</li>').join('') + '</ul>';
-            } else if (header === 'url' && cellContent) {
-                formattedContent = '<a href="' + cellContent + '" target="_blank">Visualizar</a>';
-            } else if (typeof cellContent === 'boolean') {
-                formattedContent = cellContent ? 'Sim' : 'Não';
-            } else {
-                formattedContent = cellContent || '';
-            }
-
-            tableHTML += '<td>' + formattedContent + '</td>';
-          });
-
-        // 🔸 Célula da coluna de ações (alinhada à direita com 20px de distância)
-        if (tabId !== 'resumo') {
-            const ASPAS = String.fromCharCode(39);
-            const onclick_string = 'event.stopPropagation(); confirmDelete('+ASPAS+tabId+ASPAS+','+ASPAS+item.id+ASPAS+');';
-            tableHTML += '<td class="action-cell"><button class="icon-button delete-button" title="Excluir" onclick="'+onclick_string+'">${getIcon('lixeira')
-            }</button></td>';
-          }
-
-        tableHTML += '</tr>';
-        });
-
-    tableHTML += '</tbody></table>';
-    return tableHTML;
-      };
-
-
-                if (tabId == 'resumo') {
-                    renderizarResumo(data.items);
-      } else {
-        // botão fixo no topo direito (exceto resumo)
-                    const ap = "'";
-                    const newButtonHTML = '<div class="new-button-fixed"><button class="action-button" onclick="handleNewRecord('+ap+tabId+ap+')">Novo</button></div>';
-                
-                    tabContentElement.innerHTML = newButtonHTML + renderTable(data.items, tabId);
-      }
-      // Se for a guia de pesagens, renderiza o gráfico
-                if (tabId === 'pesagens' && data.chartData) {
-                    tabContentElement.innerHTML += '<div class="chart-container"><canvas id="weightChart"></canvas></div>';
-                    renderChart(data.chartData);
-      }
-
-                cachedData[tabId
-      ] = true;
-    }
-  } catch (error) {
-            tabContentElement.innerHTML = '<div class="error-message">Ocorreu um erro ao carregar os dados.</div>';
-  }
-}
-
-    function renderChart(chartData) {
-  // Converte dados do backend em pontos {x,y}
-        const dataPoints = chartData.map(item => ({
-            x: new Date(item.data),
-            y: item.peso
-  }));
-
-        const maxWeight = Math.max(...dataPoints.map(p => p.y));
-        const maxYValue = Math.ceil(maxWeight / 10) * 10;
-
-        const ctx = document.getElementById('weightChart').getContext('2d');
-
-        // pega primeira e última data reais do dataset
-        const dates = chartData.map(item => new Date(item.data));
-        const minDate = new Date(Math.min(...dates));
-        const today = new Date();
-
-        // adiciona margem de 15 dias antes da primeira data
-        const paddedMinDate = new Date(minDate);
-        paddedMinDate.setDate(minDate.getDate() - 15);
-
-        new Chart(ctx,
-  {
-            type: 'line',
-            data: {
-                datasets: [
-        {
-                    label: 'Peso',
-                    data: dataPoints,
-                    borderColor: '#4A90E2',
-                    backgroundColor: 'rgba(74,
-          144,
-          226,
-          0.2)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 3
-        }
-      ]
-    },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'month',
-                            displayFormats: {
-                                month: 'MMM yy' // Exibe Jan 23, Fev 23, etc.
-            }
-          },
-                        ticks: {
-                            callback: function(value, index, ticks) {
-                                const date = new Date(value);
-                                // Verifica se é o primeiro mês do ano (Janeiro, que é o mês 0)
-                                if (date.getMonth() === 0) {
-                                    return date.getFullYear(); // Exibe o ano completo
-              } else {
-                // Retorna a primeira letra do mês
-                                    const month = date.toLocaleString('pt-BR',
-                {
-                                        month: 'short'
-                });
-                                    return month.charAt(0).toUpperCase();
-              }
-            },
-                            autoSkip: true,
-                            maxRotation: 0,
-                            minRotation: 0
-          },
-                        min: paddedMinDate,
-                        max: today,
-                        grid: {
-                            drawTicks: true
-          }
-        },
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: maxYValue
-        }
-      },
-                plugins: {
-                    legend: {
-                        display: false
-        }
-      }
-    }
-  });
-}
-
-    function handleNewRecord(tabId) {
-        if (tabId === 'pesagens') {
-            openPesagemPopup();
-  } else {
-    // Pode expandir para imunizações, tratamentos etc.
-            showAlert('Abrindo formulário de novo registro em: ' + tabId, 'info',
-    2500);
-  }
-}
-// Funções para inicializar o sistema de guias, pop-ups e outras funcionalidades
-    function initTabs() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.getAttribute('data-tab');
-
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-
-                button.classList.add('active');
-                document.getElementById('tab-' + tabId).classList.add('active');
-
-                fetchTabData(tabId);
-    });
-  });
-}
-
-    let currentButton = null;
-    let currentType = null;
-
-    function openMenu(data, button, type, labelKey) {
-        currentButton = button;
-        currentType = type;
-
-        const menu = document.getElementById('pop-up-menu');
-        const overlay = document.getElementById('overlay');
-        const optionsContainer = document.getElementById('pop-up-options-container');
-
-        menu.querySelector('h2').textContent = "Selecione " + type.charAt(0).toUpperCase() + type.slice(1);
-
-        optionsContainer.innerHTML = '';
-        data.forEach(item => {
-            const option = document.createElement('div');
-            option.classList.add('pop-up-option');
-            option.textContent = item[labelKey
-    ];
-            option.setAttribute('data-id', item.id);
-
-            option.onclick = () => selectOption('${animal.animal_id
-    }', item.id, item[labelKey
-    ]);
-            optionsContainer.appendChild(option);
-  });
-
-        overlay.style.display = 'block';
-        menu.style.display = 'flex';
-}
-
-    function closeMenu() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('pop-up-menu').style.display = 'none';
-}
-
-    function selectOption(idAnimal, valueId, valueText) {
-        if (currentButton && currentType) {
-            updateCharacteristic(idAnimal, currentType, valueId, valueText);
-  }
-        closeMenu();
-}
-
-    async function updateCharacteristic(animalId, type, valueId, valueText) {
-        try {
-            let payload = {
-                animal_id: animalId,
-                caracteristica: type,
-                caracteristica_id: valueId,
-                caracteristica_label: valueText
-    };
-            await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update",
-    {
-                method: "POST",
-                headers: {
-        "Content-Type": "application/json"
-      },
-                body: JSON.stringify(payload)
-    });
-
-            currentButton.textContent = valueText;
-            showAlert('Item salvo com sucesso.');
-  } catch (error) {
-            showAlert('Erro ao atualizar: ' + type + ' - ', error);
-  }
-}
-
-    function initDatePopup() {
-        const nascimentoButton = document.getElementById("open-nascimento-menu");
-        const nascimentoPopup = document.getElementById("pop-up-nascimento");
-        const nascimentoInput = document.getElementById("nascimento-input");
-        const confirmNascimento = document.getElementById("confirm-nascimento");
-        const cancelNascimento = document.getElementById("cancel-nascimento");
-        const overlay = document.getElementById("overlay");
-        const popupActions = nascimentoPopup.querySelector('.pop-up-actions');
-
-        nascimentoButton.onclick = function() {
-            if (nascimentoButton.textContent !== "Definir Data") {
-                nascimentoInput.value = nascimentoButton.textContent;
-    } else {
-                nascimentoInput.value = "";
-    }
-    // Limpa a mensagem de erro ao abrir
-            clearErrorMessage(); 
-            overlay.style.display = "block";
-            nascimentoPopup.style.display = "flex";
-  };
-        
-        function clearErrorMessage() {
-            const errorElement = nascimentoPopup.querySelector('.error-message-nascimento');
-            if (errorElement) {
-                errorElement.remove();
-    }
-  }
-
-        function showErrorMessage(message) {
-            clearErrorMessage();
-            popupActions.insertAdjacentHTML('beforebegin', '<p class="error-message-nascimento" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">' + message + '</p>');
-  }
-
-        function closeNascimentoPopup() {
-            clearErrorMessage();
-            overlay.style.display = "none";
-            nascimentoPopup.style.display = "none";
-  }
-
-        cancelNascimento.onclick = closeNascimentoPopup;
-
-        confirmNascimento.onclick = async function() {
-            const novaData = nascimentoInput.value;
-            if (!novaData) {
-                showErrorMessage('Selecione uma data válida.');
-                return;
-    }
-
-            try {
-                await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update",
-      {
-                    method: "POST",
-                    headers: {
-          "Content-Type": "application/json"
-        },
-                    body: JSON.stringify({
-                        animal_id: '${animal.animal_id
-          }',
-                        caracteristica: "nascimento",
-                        data_nascimento: novaData
-        })
-      });
-
-                nascimentoButton.textContent = novaData;
-                showAlert("Data de nascimento atualizada com sucesso!");
-    } catch (error) {
-                showAlert("Erro ao atualizar data de nascimento:", error);
-    }
-
-            closeNascimentoPopup();
-  };
-
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Escape" || event.key === "Esc") {
-                closeMenu();
-                closeNascimentoPopup();
-                closePesagemPopup(); // Fechar pop-up de Pesagem no ESC
-                cancelDelete();
-    }
-  });
-}
-
-    document.addEventListener('DOMContentLoaded', function() {
-        initTabs();
-        initDatePopup();
-
-        document.getElementById('open-especie-menu').onclick = () =>
-            openMenu(${especies
-  }, document.getElementById('open-especie-menu'), 'especie', 'especie');
-
-        document.getElementById('open-raca-menu').onclick = () =>
-            openMenu(${racas
-  }, document.getElementById('open-raca-menu'), 'raca', 'raca');
-
-        document.getElementById('open-genero-menu').onclick = () =>
-            openMenu(${generos
-  }, document.getElementById('open-genero-menu'), 'genero', 'genero');
-
-        document.getElementById('open-porte-menu').onclick = () =>
-            openMenu(${portes
-  }, document.getElementById('open-porte-menu'), 'porte', 'porte');
-
-        document.getElementById('open-cor-menu').onclick = () =>
-            openMenu(${cores
-  }, document.getElementById('open-cor-menu'), 'cor', 'cor');
-
-        document.getElementById('open-pelagem-menu').onclick = () =>
-            openMenu(${pelagens
-  }, document.getElementById('open-pelagem-menu'), 'pelagem', 'pelagem');
-            
-        // Configura os botões do pop-up de pesagem (MANTIDO CASO O POP-UP SEJA USADO PARA 'NOVO')
-        document.getElementById('confirm-pesagem').onclick = updatePesagemRecord;
-        document.getElementById('cancel-pesagem').onclick = closePesagemPopup;
-
-
-        // Carrega a guia de resumo por padrão
-        document.querySelector('[data-tab="resumo"
-  ]').click();
-});
-
-    function renderizarResumo(resumoData) {
-
-        if (!resumoData || resumoData.length === 0 ) {
-            document.getElementById('tab-resumo').innerHTML =
-                '<p class="no-data-message">Nenhum dado de resumo disponível.</p>';
-            return;
-  }
-
-        const dados = resumoData[
-    0
-  ];
-
-        const secoes = {
-            'saude-geral-list': [
-      { label: 'Última avaliação', value: dados[
-          "Última avaliação"
-        ] || 'N/A'
-      },
-      { label: 'Score Corporal', value: dados['Score Corporal'
-        ] !== null ? dados[
-          "Score Corporal"
-        ] : 'N/A'
-      },
-      { label: 'Índice de saúde', value: dados['Índice de saúde'
-        ] || 'N/A'
-      },
-      { label: 'Observações', value: dados['Observações'
-        ] || 'N/A'
-      }
-    ],
-            'vacinacao-list': [
-      { label: 'Última vacinação', value: dados['Última vacinação'
-        ] || 'N/A'
-      },
-      { label: 'Próxima vacinação', value: dados['Próxima vacinação'
-        ] || 'N/A'
-      }
-    ],
-            'parasitas-list': [
-      { label: 'Última vermifugação', value: dados['Última vermifugação'
-        ] || 'N/A'
-      },
-      { label: 'Próxima vermifugação', value: dados['Próxima vermifugação'
-        ] || 'N/A'
-      },
-      { label: 'Última desparasitação', value: dados['Última desparasitação'
-        ] || 'N/A'
-      },
-      { label: 'Próxima desparasitação', value: dados['Próxima desparasitação'
-        ] || 'N/A'
-      }
-    ],
-            'peso-list': [
-      { label: 'Data da última pesagem', value: dados['Data pesagem'
-        ] || 'N/A'
-      },
-      { label: 'Peso atual', value: dados['Último peso'
-        ] !== null ? dados[
-          "Último peso"
-        ] + ' kg' : 'N/A'
-      },
-      { label: 'Peso anterior', value: dados['Peso anterior'
-        ] !== null ? dados[
-          "Peso anterior"
-        ] + ' kg' : "N/A"
-      },
-      { label: 'Variação de peso', value: dados['Variação de peso'
-        ] || 'N/A'
-      }
-    ]
-  };
-
-        for (const [id, itens
-  ] of Object.entries(secoes)) {
-            const container = document.getElementById(id);
-
-            if (container) {
-                container.innerHTML = ''; // limpa antes
-                itens.forEach(item => {
-                    const itemHTML =
-                        '<div class="resume-item"><strong>' + item.label + ':</strong> ' +
-                        '<span class="resume-value">' + item.value + '</span></div>';
-                    container.innerHTML += itemHTML;
-      });
-    }
-  }
-}
-
-    function showAlert(message, type = 'success', duration = 1500) {
-        console.log('showAlert:' + message + ', ' + type + ', ' + duration);
-        const popup = document.getElementById('alert-popup');
-        const icon = document.getElementById('alert-icon');
-        const messageText = document.getElementById('alert-message');
-
-        // Limpa classes anteriores e adiciona a nova
-        popup.className = 'alert-popup';
-        popup.classList.add(type);
-        popup.classList.add('show');
-        
-        // Define o texto da mensagem
-        messageText.textContent = message;
-
-        // Limpa e define o conteúdo do ícone
-  //icon.innerHTML = '';
-  //icon.classList.add(type);
-  // Define um temporizador para esconder o pop-up
-        setTimeout(() => {
-            popup.classList.remove('show');
-  }, duration);
-}
-</script>
-
-<script>
-      // Função para simular o início da criação de um novo registro
-    function newRecord(tabId) {
-        showAlert('Iniciando a criação de um novo registro em: ' + tabId, 'info',
-  2500);
-        // Coloque aqui a lógica para abrir um pop-up/formulário 
-  // para a criação do novo item para a guia (tabId)
-}
-</script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adote ${animal.nome
-}</title>
+    <title>Adote ${animal.nome}</title>
 </head>
 
 <body>
@@ -862,16 +144,15 @@ const renderTable = (items, tabId) => {
             <a href="${app_url}" class="back-button">Voltar</a>
             <div class="content-wrapper">
                 <div class="animal-photo-container">
-                    <img class="animal-photo" src="${animal.foto}" alt="Foto de ${animal.nome}" />
+                    <img class="animal-photo" src="${animal.foto || animalPhoto(animal.especie)}}" alt="Foto de ${animal.nome}" />
                 </div>
                 <div class="text-content">
                     <div class="animal-header">
-                        <h1>${animal.nome
-}</h1>
+                        <div>&nbsp</div>
+                        <h1>&nbsp${animal.nome}</h1>
                     </div>
                     <div class="button-container">
-                        ${iconesAnimal
-}
+                        &nbsp${iconesAnimal}
                     </div>
                 </div>
             </div>
@@ -879,49 +160,37 @@ const renderTable = (items, tabId) => {
                 <div class="details-grid">
                     <div class="detail-item">
                         <strong>Espécie:</strong>
-                        <button class="detail-button" id="open-especie-menu">${animal.especie
-}</button>
+                        <button class="detail-button" id="open-especie-menu">${animal.especie}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Raça:</strong>
-                        <button class="detail-button" id="open-raca-menu">${animal.raça
-}</button>
+                        <button class="detail-button" id="open-raca-menu">${animal.raça}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Gênero:</strong>
-                        <button class="detail-button" id="open-genero-menu">${animal.sexo
-}</button>
+                        <button class="detail-button" id="open-genero-menu">${animal.sexo}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Porte:</strong>
-                        <button class="detail-button" id="open-porte-menu">${animal.porte
-}</button>
+                        <button class="detail-button" id="open-porte-menu">${animal.porte}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Cor:</strong>
-                        <button class="detail-button" id="open-cor-menu">${animal.cor
-}</button>
+                        <button class="detail-button" id="open-cor-menu">${animal.cor}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Pelagem:</strong>
-                        <button class="detail-button" id="open-pelagem-menu">${animal.pelagem
-}</button>
+                        <button class="detail-button" id="open-pelagem-menu">${animal.pelagem}</button>
                     </div>
                     <div class="detail-item">
                         <strong>Data de Nascimento:</strong>
-                        <button id="open-nascimento-menu" class="detail-button">${animal.nascimento ? animal.nascimento : 'Definir Data'
-}</button>
+                        <button id="open-nascimento-menu" class="detail-button">${animal.nascimento ? animal.nascimento : 'Definir Data'}</button>
                     </div>
-                    <div class="detail-item"><strong>Faixa Etária:</strong> <span class="characteristic-box">${animal.faixa_etaria
-}</span></div>
-                    <div class="detail-item"><strong>Idade:</strong> <span class="characteristic-box">${ageString
-}</span></div>
-                    <div class="detail-item"><strong>Peso:</strong> <span class="characteristic-box">${formatValue(animal.peso)
-} kg</span></div>
-                    <div class="detail-item"><strong>Altura:</strong> <span class="characteristic-box">${formatValue(animal.altura)
-} cm</span></div>
-                    <div class="detail-item"><strong>Comprimento:</strong> <span class="characteristic-box">${formatValue(animal.comprimento)
-} cm</span></div>
+                    <div class="detail-item"><strong>Faixa Etária:</strong> <span class="characteristic-box">${animal.faixa_etaria}</span></div>
+                    <div class="detail-item"><strong>Idade:</strong> <span class="characteristic-box">${ageString}</span></div>
+                    <div class="detail-item"><strong>Peso:</strong> <span class="characteristic-box">${formatValue(animal.peso)} kg</span></div>
+                    <div class="detail-item"><strong>Altura:</strong> <span class="characteristic-box">${formatValue(animal.altura)} cm</span></div>
+                    <div class="detail-item"><strong>Comprimento:</strong> <span class="characteristic-box">${formatValue(animal.comprimento)} cm</span></div>
                 </div>
             </div>
         </div>
@@ -1029,25 +298,787 @@ const renderTable = (items, tabId) => {
         </div>
     </div>
 
-    <script>
-        (function () {
-          function setToolbarOffsets() {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-              const toolbar = tab.querySelector('.new-button-fixed');
-              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;
-              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;
-              const offset = toolbarH + padTop;
-              tab.style.setProperty('--tab-header-offset', offset + 'px');
-    });
-  }
-  // inicial + resize
-          window.addEventListener('load', setToolbarOffsets);
-          window.addEventListener('resize', setToolbarOffsets);
+    <!-- POP-UP NOVO TRATAMENTO -->
+    <div id="pop-up-tratamento" class="pop-up-menu" style="width: 460px; padding: 20px; display: none;">
+      <span class="pop-up-close" onclick="closeTratamentoPopup()">&times;</span>
+      <h2>Tratamento</h2>
+    
+      <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="hidden" id="tratamento-id" />
+    
+        <!-- Linha 1: Veterinário -->
+        <div>
+          <label>Veterinário</label>
+          <select id="tratamento-vet-select" class="date-input" style="width: 100%;"></select>
+        </div>
+    
+        <!-- Linha 2: Medicamento e Via -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label>Medicamento</label>
+            <select id="tratamento-med-select" class="date-input"></select>
+          </div>
+          <div>
+            <label>Via</label>
+            <select id="tratamento-via-select" class="date-input"></select>
+          </div>
+        </div>
+    
+        <!-- Linha 3: Fração, Dosagem e Dose -->
+        <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; align-items: center;">
+          <div>
+            <label>Dosagem</label>
+            <select id="tratamento-dosagem-select" class="date-input"></select>
+          </div>
+          <div>
+            <label>Quantidade</label>
+            <div id="tratamento-dose-wrapper"></div>
+          </div>
+          <div>
+            <label>&nbsp;</label> <!-- espaço reservado -->
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input type="checkbox" id="tratamento-fracao" />
+              <label for="tratamento-fracao">Fração</label>
+            </div>
+          </div>
+        </div>
         
-          // se a barra “Novo” mudar de altura (quebrar linha, fonte, etc.)
-          const ro = new ResizeObserver(setToolbarOffsets);
-          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));
-})();
+        <!-- Linha 4: Data início, Horário, Intervalo -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <div>
+            <label>Data Início</label>
+            <input type="date" id="tratamento-inicio-input" class="date-input" />
+          </div>
+          <div>
+            <label>Horário</label>
+            <input type="time" id="tratamento-horario-input" class="date-input" />
+          </div>
+          <div>
+            <label>Intervalo</label>
+            <select id="tratamento-intervalo-select" class="date-input"></select>
+          </div>
+        </div>
+    
+        <!-- Linha 5: Duração -->
+        <div>
+          <label>Duração</label>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input type="checkbox" id="tratamento-continuo" />
+              <label for="tratamento-continuo">Uso contínuo</label>
+            </div>
+            <div id="tratamento-dias-wrapper">
+              <input type="number" min="1" id="tratamento-dias-input" class="date-input" placeholder="Dias" style="width: 80px;" />
+            </div>
+          </div>
+        </div>
+    
+        <!-- Observações -->
+        <div>
+          <label>Observações</label>
+          <textarea id="tratamento-observacoes-input" class="date-input" rows="3"></textarea>
+        </div>
+      </div>
+    
+      <!-- Ações -->
+      <div class="pop-up-actions" style="margin-top: 10px;">
+        <button id="cancel-tratamento" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+        <button id="confirm-tratamento" class="action-button" style="flex: 1; max-width: 100px;">Salvar</button>
+      </div>
+    </div>
+
+
+    <!------------------------------------------ SEÇÃO DE SCRIPTS ---------------------------------------------->
+    
+    <script>
+        const cachedData = {};
+    
+        // =========================================================================
+        // FUNÇÕES DE LÓGICA DO POP-UP DE PESAGEM (AS FUNÇÕES DE ABRIR E CLIQUE FORAM REMOVIDAS/SIMPLIFICADAS)
+        // =========================================================================
+    
+        // Função de tratamento do clique na linha da tabela.
+        // É esperado que a linha tenha o atributo data-record com o JSON do item.
+        function handlePesagemClick(rowElement) {
+            // 1. Obtém a string JSON com as entidades &quot;
+            const itemDataString = rowElement.getAttribute('data-record');
+    
+            // 2. Substitui as entidades &quot; pelas aspas duplas reais (")
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+    
+            // 3. Faz o parse da string JSON para um objeto
+            const record = JSON.parse(safeJsonString);
+    
+            // 4. Abre o pop-up com o registro
+            openPesagemPopup(record);
+        }
+    
+        // Função para fechar o pop-up da pesagem
+        function closePesagemPopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-pesagem').style.display = 'none';
+            // Limpa a mensagem de erro
+            const errorElement = document.getElementById('pop-up-pesagem').querySelector('.error-message-pesagem');
+            if (errorElement) {
+                errorElement.remove();
+            }
+        }
+    
+        // Função para abrir o popup de pesagem (novo ou editar)
+        function openPesagemPopup(record = null) {
+            if (record) {
+                // Edição
+                document.getElementById('pesagem-id').value = record.id;
+                document.getElementById('pesagem-data-input').value = record.data;
+                document.getElementById('pesagem-peso-input').value = record.peso;
+            } else {
+                // Novo registro
+                document.getElementById('pesagem-id').value = "";
+                const today = new Date().toISOString().split('T')[0]; // pega AAAA-MM-DD
+                document.getElementById('pesagem-data-input').value = today;
+                document.getElementById('pesagem-peso-input').value = "";
+            }
+    
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('pop-up-pesagem').style.display = 'flex';
+        }
+    
+        // Função para salvar (update ou insert)
+        async function updatePesagemRecord() {
+            const id = document.getElementById('pesagem-id').value;
+            const data = document.getElementById('pesagem-data-input').value;
+            const peso = document.getElementById('pesagem-peso-input').value;
+    
+            const popup = document.getElementById('pop-up-pesagem');
+            const popupActions = popup.querySelector('.pop-up-actions');
+    
+            if (!data || !peso || isNaN(parseFloat(peso))) {
+                const errorElement = popup.querySelector('.error-message-pesagem');
+                if (errorElement) errorElement.remove();
+                popupActions.insertAdjacentHTML(
+                    'beforebegin',
+                    '<p class="error-message-pesagem" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">Preencha todos os campos corretamente.</p>'
+                );
+                return;
+            }
+    
+            try {
+                let payload = {
+                    animal_id: '${animal.animal_id}',
+                    data: data,
+                    peso: parseFloat(peso)
+                };
+    
+                let url = "";
+                if (id) {
+                    // atualização
+                    payload.tipo_registro = "pesagem";
+                    payload.id_registro = id;
+                    url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update";
+                } else {
+                    // inclusão
+                    url = "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-add-pesagem";
+                }
+    
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Falha ao salvar o registro de pesagem.");
+                }
+    
+                showAlert(id ? "Pesagem atualizada com sucesso!" : "Pesagem incluída com sucesso!", "success", 2000);
+    
+                cachedData['pesagens'] = null;
+                await fetchTabData('pesagens');
+    
+            } catch (error) {
+                showAlert("Erro ao salvar a pesagem: " + error.message, "error", 3000);
+            } finally {
+                closePesagemPopup();
+            }
+        }
+    
+    
+        // =========================================================================
+    
+        function renderizarResumo(resumoData) {
+    
+            if (!resumoData || resumoData.length === 0) {
+                document.getElementById('tab-resumo').innerHTML =
+                    '<p class="no-data-message">Nenhum dado de resumo disponível.</p>';
+                return;
+            }
+    
+            const dados = resumoData[0];
+    
+            const secoes = {
+                'saude-geral-list': [
+                    { label: 'Última avaliação', value: dados["Última avaliação"] || 'N/A' },
+                    { label: 'Score Corporal', value: dados['Score Corporal'] !== null ? dados["Score Corporal"] : 'N/A' },
+                    { label: 'Índice de saúde', value: dados['Índice de saúde'] || 'N/A' },
+                    { label: 'Observações', value: dados['Observações'] || 'N/A' }
+                ],
+                'vacinacao-list': [
+                    { label: 'Última vacinação', value: dados['Última vacinação'] || 'N/A' },
+                    { label: 'Próxima vacinação', value: dados['Próxima vacinação'] || 'N/A' }
+                ],
+                'parasitas-list': [
+                    { label: 'Última vermifugação', value: dados['Última vermifugação'] || 'N/A' },
+                    { label: 'Próxima vermifugação', value: dados['Próxima vermifugação'] || 'N/A' },
+                    { label: 'Última desparasitação', value: dados['Última desparasitação'] || 'N/A' },
+                    { label: 'Próxima desparasitação', value: dados['Próxima desparasitação'] || 'N/A' }
+                ],
+                'peso-list': [
+                    { label: 'Data da última pesagem', value: dados['Data pesagem'] || 'N/A' },
+                    { label: 'Peso atual', value: dados['Último peso'] !== null ? dados["Último peso"] + ' kg' : 'N/A' },
+                    { label: 'Peso anterior', value: dados['Peso anterior'] !== null ? dados["Peso anterior"] + ' kg' : "N/A" },
+                    { label: 'Variação de peso', value: dados['Variação de peso'] || 'N/A' }
+                ]
+            };
+    
+            for (const [id, itens] of Object.entries(secoes)) {
+                const container = document.getElementById(id);
+    
+                if (container) {
+                    container.innerHTML = ''; // limpa antes
+                    itens.forEach(item => {
+                        const itemHTML =
+                            '<div class="resume-item"><strong>' + item.label + ':</strong> ' +
+                            '<span class="resume-value">' + item.value + '</span></div>';
+                        container.innerHTML += itemHTML;
+                    });
+                }
+            }
+        }
+    
+    async function fetchTabData(tabId) {
+        if (cachedData[tabId]) {
+            return;
+        }
+    
+        const tabContentElement = document.getElementById('tab-' + tabId);
+        // tabContentElement.innerHTML = '<div class="loading-message">Carregando...</div>';
+    
+        try {
+            const payload = {
+                tab_name: tabId,
+                animal_id: '${animal.animal_id}'
+            };
+    
+            const response = await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-animal-dados", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Erro na resposta da rede: ' + response.statusText);
+            }
+    
+            const data = await response.json();
+    
+            // mapeamento de colunas (mantido do original)
+            const columnMappings = {
+                'eventos': {
+                    'data': 'Data',
+                    'tipo': 'Tipo',
+                    'descricao': 'Descrição',
+                    'veterinario_nome': 'Veterinário'
+                },
+                'pesagens': {
+                    'data': 'Data',
+                    'peso': 'Medição',
+                    'variacao': 'Variação'
+                },
+                'avaliacoes': {
+                    'data': 'Data',
+                    'observacao': 'Observação',
+                    'veterinario_nome': 'Veterinário',
+                    'temperatura': 'Temp.',
+                    'score': 'Score',
+                    'peso': 'Peso',
+                    'nota': 'Nota'
+                },
+                'imunizacoes': {
+                    'data_exibicao': 'Data',
+                    'tipo': 'Tipo',
+                    'nome_imunizante': 'Imunizante',
+                    'veterinario_nome': 'Veterinário',
+                    'aplicada': 'Aplicada'
+                },
+                'tratamentos': {
+                },
+                'arquivos': {
+                    'data': 'Data',
+                    'nome': 'Nome',
+                    'observacao': 'Observação',
+                    'url': 'Visualizar'
+                }
+            };
+            
+            // Lista fixa de chaves a excluir
+            const excludedKeys = ['id', 'animal_id', 'concluido', 'programado', 'atrasado'];
+            
+            // Função para decidir se uma chave deve ser exibida ou não
+            function shouldDisplayKey(key) {
+                // exclui qualquer chave na lista ou que termine com 'id' (case insensitive)
+                return !excludedKeys.includes(key) && !key.toLowerCase().endsWith('id');
+            }
+            
+            const renderTable = (items, tabId) => {
+                const currentMapping = columnMappings[tabId] || {};
+                const headers = Object.keys(items[0]).filter(shouldDisplayKey);
+
+                let tableHTML = '<table class="tab-table"><thead><tr>';
+    
+                headers.forEach(header => {
+                    const title = currentMapping[header] || header.charAt(0).toUpperCase() + header.slice(1);
+                    tableHTML += '<th>' + title + '</th>';
+                });
+    
+                if (tabId !== 'resumo') {
+                    tableHTML += '<th style="min-width:40px; width:auto;"></th>';
+                }
+    
+                tableHTML += '</tr></thead><tbody>';
+    
+                items.forEach(item => {
+                    let rowAttributes = '';
+    
+                    // Adiciona acionamento por click no registro da tabela
+                    if (tabId === 'pesagens') {
+                        const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                        rowAttributes = 'data-record="'+safeJson+'" onclick="handlePesagemClick(this)" style="cursor:pointer;"';
+                    }
+    
+                    // Adiciona acionamento por click no registro da tabela
+                    if (tabId === 'tratamentos') {
+                        const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                        rowAttributes = 'data-record="'+safeJson+'" onclick="handleTratamentoClick(this)" style="cursor:pointer;"';
+                    }
+                    
+                    tableHTML += '<tr '+rowAttributes+'>';
+    
+                    headers.forEach(header => {
+                        let formattedContent = '';
+                        const cellContent = item[header];
+    
+                        if (['data', 'data_exibicao'].includes(header) && cellContent) {
+                            const [year, month, day] = cellContent.split('-');
+                            formattedContent = day + '/' + month + '/' + year;
+                        } else if (header === 'peso' && cellContent !== null) {
+                            formattedContent = cellContent + ' kg';
+                        } else if (header === 'medicamentos' && Array.isArray(cellContent)) {
+                            formattedContent = '<ul>' + cellContent.map(med => '<li>' + med + '</li>').join('') + '</ul>';
+                        } else if (header === 'url' && cellContent) {
+                            formattedContent = '<a href="' + cellContent + '" target="_blank">Visualizar</a>';
+                        } else if (typeof cellContent === 'boolean') {
+                            formattedContent = cellContent ? 'Sim' : 'Não';
+                        } else {
+                            formattedContent = cellContent || '';
+                        }
+    
+                        tableHTML += '<td>' + formattedContent + '</td>';
+                    });
+    
+                    if (tabId !== 'resumo') {
+                        const ASPAS = String.fromCharCode(39);
+                        const onclick_string = 'event.stopPropagation(); confirmDelete('+ASPAS+tabId+ASPAS+','+ASPAS+item.id+ASPAS+');';
+                        tableHTML += '<td class="action-cell"><button class="icon-button delete-button" title="Excluir" onclick="'+onclick_string+'">${getIcon('lixeira')}</button></td>';
+                    }
+    
+                    tableHTML += '</tr>';
+                });
+    
+                tableHTML += '</tbody></table>';
+                return tableHTML;
+            };
+            // --- fim renderTable ---
+    
+            // 🔸 SEMPRE começamos com a faixa "Novo" (exceto Resumo)
+            let contentHTML = '';
+            if (tabId !== 'resumo') {
+                const ap = "'";
+                const newButtonHTML = '<div class="new-button-fixed"><button class="action-button" onclick="handleNewRecord('+ap+tabId+ap+')">Novo</button></div>';
+                contentHTML += newButtonHTML;
+            }
+    
+            // Estados possíveis
+            let shouldRenderChart = false;
+            let chartDataBuffer = null;
+    
+            if (data.error) {
+                contentHTML += '<div class="no-data-message">' + data.error + '</div>';
+                tabContentElement.innerHTML = contentHTML;
+                cachedData[tabId] = true;
+                return;
+            }
+    
+            if (tabId === 'resumo') {
+                // Resumo não tem botão e usa o renderizador específico
+                //tabContentElement.innerHTML = '<div class="no-data-message">Carregando resumo...</div>';
+                renderizarResumo(data.items);
+                cachedData[tabId] = true;
+                return;
+            }
+    
+            // Demais guias:
+            if (!data.items || data.items.length === 0 || data.items[0].id == null) {
+                // Sem registros → mantém o botão visível e mostra msg
+                contentHTML += '<div class="no-data-message">Nenhum item encontrado.</div>';
+                tabContentElement.innerHTML = contentHTML;
+                cachedData[tabId] = true;
+                return;
+            }
+    
+            // Com registros → renderiza tabela
+            contentHTML += renderTable(data.items, tabId);
+    
+            // Gráfico de Pesagens
+            if (tabId === 'pesagens' && data.chartData) {
+                contentHTML += '<div class="chart-container"><canvas id="weightChart"></canvas></div>';
+                shouldRenderChart = true;
+                chartDataBuffer = data.chartData;
+            }
+    
+            // Aplica DOM de uma vez só
+            tabContentElement.innerHTML = contentHTML;
+    
+            // Renderiza o gráfico após existir o canvas no DOM
+            if (shouldRenderChart && chartDataBuffer) {
+                renderChart(chartDataBuffer);
+            }
+    
+            cachedData[tabId] = true;
+    
+        } catch (error) {
+            tabContentElement.innerHTML = '<div class="error-message">Ocorreu um erro ao carregar os dados.</div>';
+        }
+    }
+    
+    
+        function renderChart(chartData) {
+            // Converte dados do backend em pontos {x,y}
+            const dataPoints = chartData.map(item => ({
+                x: new Date(item.data),
+                y: item.peso
+            }));
+    
+            const maxWeight = Math.max(...dataPoints.map(p => p.y));
+            const maxYValue = Math.ceil(maxWeight / 10) * 10;
+    
+            const ctx = document.getElementById('weightChart').getContext('2d');
+    
+            // pega primeira e última data reais do dataset
+            const dates = chartData.map(item => new Date(item.data));
+            const minDate = new Date(Math.min(...dates));
+            const today = new Date();
+    
+            // adiciona margem de 15 dias antes da primeira data
+            const paddedMinDate = new Date(minDate);
+            paddedMinDate.setDate(minDate.getDate() - 15);
+    
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Peso',
+                        data: dataPoints,
+                        borderColor: '#4A90E2',
+                        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yy' // Exibe Jan 23, Fev 23, etc.
+                                }
+                            },
+                            ticks: {
+                                callback: function (value, index, ticks) {
+                                    const date = new Date(value);
+                                    // Verifica se é o primeiro mês do ano (Janeiro, que é o mês 0)
+                                    if (date.getMonth() === 0) {
+                                        return date.getFullYear(); // Exibe o ano completo
+                                    } else {
+                                        // Retorna a primeira letra do mês
+                                        const month = date.toLocaleString('pt-BR', {
+                                            month: 'short'
+                                        });
+                                        return month.charAt(0).toUpperCase();
+                                    }
+                                },
+                                autoSkip: true,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            min: paddedMinDate,
+                            max: today,
+                            grid: {
+                                drawTicks: true
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: maxYValue
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    
+        function handleNewRecord(tabId) {
+            if (tabId === 'pesagens') {
+                openPesagemPopup();
+            } else if (tabId === 'tratamentos') {
+                openTratamentoPopup();
+            } else {
+                showAlert('Abrindo formulário de novo registro em: ' + tabId, 'info', 2500);
+            }
+        }
+    
+        // Funções para inicializar o sistema de guias, pop-ups e outras funcionalidades
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+    
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+    
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+    
+                    button.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+    
+                    fetchTabData(tabId);
+                });
+            });
+        }
+    
+        let currentButton = null;
+        let currentType = null;
+    
+        function openMenu(data, button, type, labelKey) {
+            currentButton = button;
+            currentType = type;
+    
+            const menu = document.getElementById('pop-up-menu');
+            const overlay = document.getElementById('overlay');
+            const optionsContainer = document.getElementById('pop-up-options-container');
+    
+            menu.querySelector('h2').textContent = "Selecione " + type.charAt(0).toUpperCase() + type.slice(1);
+    
+            optionsContainer.innerHTML = '';
+            data.forEach(item => {
+                const option = document.createElement('div');
+                option.classList.add('pop-up-option');
+                option.textContent = item[labelKey];
+                option.setAttribute('data-id', item.id);
+    
+                option.onclick = () => selectOption('${animal.animal_id}', item.id, item[labelKey]);
+                optionsContainer.appendChild(option);
+            });
+    
+            overlay.style.display = 'block';
+            menu.style.display = 'flex';
+        }
+    
+        function closeMenu() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-menu').style.display = 'none';
+        }
+    
+        function selectOption(idAnimal, valueId, valueText) {
+            if (currentButton && currentType) {
+                updateCharacteristic(idAnimal, currentType, valueId, valueText);
+            }
+            closeMenu();
+        }
+    
+        async function updateCharacteristic(animalId, type, valueId, valueText) {
+            try {
+                let payload = {
+                    animal_id: animalId,
+                    caracteristica: type,
+                    caracteristica_id: valueId,
+                    caracteristica_label: valueText
+                };
+                await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+    
+                currentButton.textContent = valueText;
+                showAlert('Item salvo com sucesso.');
+            } catch (error) {
+                showAlert('Erro ao atualizar: ' + type + ' - ', error);
+            }
+        }
+    
+        function initDatePopup() {
+            const nascimentoButton = document.getElementById("open-nascimento-menu");
+            const nascimentoPopup = document.getElementById("pop-up-nascimento");
+            const nascimentoInput = document.getElementById("nascimento-input");
+            const confirmNascimento = document.getElementById("confirm-nascimento");
+            const cancelNascimento = document.getElementById("cancel-nascimento");
+            const overlay = document.getElementById("overlay");
+            const popupActions = nascimentoPopup.querySelector('.pop-up-actions');
+    
+            nascimentoButton.onclick = function () {
+                if (nascimentoButton.textContent !== "Definir Data") {
+                    nascimentoInput.value = nascimentoButton.textContent;
+                } else {
+                    nascimentoInput.value = "";
+                }
+                // Limpa a mensagem de erro ao abrir
+                clearErrorMessage();
+                overlay.style.display = "block";
+                nascimentoPopup.style.display = "flex";
+            };
+    
+            function clearErrorMessage() {
+                const errorElement = nascimentoPopup.querySelector('.error-message-nascimento');
+                if (errorElement) {
+                    errorElement.remove();
+                }
+            }
+    
+            function showErrorMessage(message) {
+                clearErrorMessage();
+                popupActions.insertAdjacentHTML('beforebegin', '<p class="error-message-nascimento" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">' + message + '</p>');
+            }
+    
+            function closeNascimentoPopup() {
+                clearErrorMessage();
+                overlay.style.display = "none";
+                nascimentoPopup.style.display = "none";
+            }
+    
+            cancelNascimento.onclick = closeNascimentoPopup;
+    
+            confirmNascimento.onclick = async function () {
+                const novaData = nascimentoInput.value;
+                if (!novaData) {
+                    showErrorMessage('Selecione uma data válida.');
+                    return;
+                }
+    
+                try {
+                    await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            animal_id: '${animal.animal_id}',
+                            caracteristica: "nascimento",
+                            data_nascimento: novaData
+                        })
+                    });
+    
+                    nascimentoButton.textContent = novaData;
+                    showAlert("Data de nascimento atualizada com sucesso!");
+                } catch (error) {
+                    showAlert("Erro ao atualizar data de nascimento:", error);
+                }
+    
+                closeNascimentoPopup();
+            };
+    
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape" || event.key === "Esc") {
+                    closeMenu();
+                    closeNascimentoPopup();
+                    closePesagemPopup(); 
+                    closeTratamentoPopup(); 
+                    cancelDelete();
+                }
+            });
+        }
+    
+        document.addEventListener('DOMContentLoaded', function () {
+            initTabs();
+            initDatePopup();
+    
+            document.getElementById('open-especie-menu').onclick = () =>
+                openMenu(${ especies }, document.getElementById('open-especie-menu'), 'especie', 'especie');
+    
+            document.getElementById('open-raca-menu').onclick = () =>
+                openMenu(${ racas }, document.getElementById('open-raca-menu'), 'raca', 'raca');
+    
+            document.getElementById('open-genero-menu').onclick = () =>
+                openMenu(${ generos }, document.getElementById('open-genero-menu'), 'genero', 'genero');
+    
+            document.getElementById('open-porte-menu').onclick = () =>
+                openMenu(${ portes }, document.getElementById('open-porte-menu'), 'porte', 'porte');
+    
+            document.getElementById('open-cor-menu').onclick = () =>
+                openMenu(${ cores }, document.getElementById('open-cor-menu'), 'cor', 'cor');
+    
+            document.getElementById('open-pelagem-menu').onclick = () =>
+                openMenu(${ pelagens }, document.getElementById('open-pelagem-menu'), 'pelagem', 'pelagem');
+    
+            // Configura os botões do pop-up de pesagem (MANTIDO CASO O POP-UP SEJA USADO PARA 'NOVO')
+            document.getElementById('confirm-pesagem').onclick = updatePesagemRecord;
+            document.getElementById('cancel-pesagem').onclick = closePesagemPopup;
+    
+    
+            // Carrega a guia de resumo por padrão
+            document.querySelector('[data-tab="resumo"]').click();
+        });
+    
+        function showAlert(message, type = 'success', duration = 1500) {
+            console.log('showAlert:' + message + ', ' + type + ', ' + duration);
+            const popup = document.getElementById('alert-popup');
+            const icon = document.getElementById('alert-icon');
+            const messageText = document.getElementById('alert-message');
+    
+            // Limpa classes anteriores e adiciona a nova
+            popup.className = 'alert-popup';
+            popup.classList.add(type);
+            popup.classList.add('show');
+    
+            // Define o texto da mensagem
+            messageText.textContent = message;
+    
+            // Limpa e define o conteúdo do ícone
+            //icon.innerHTML = '';
+            //icon.classList.add(type);
+    
+            // Define um temporizador para esconder o pop-up
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, duration);
+        }
+    
+        // Função para simular o início da criação de um novo registro
+        function newRecord(tabId) {
+            showAlert('Iniciando a criação de um novo registro em: ' + tabId, 'info', 2500);
+            // Coloque aqui a lógica para abrir um pop-up/formulário 
+            // para a criação do novo item para a guia (tabId)
+        }
     </script>
 
     <script>
@@ -1059,18 +1090,39 @@ const renderTable = (items, tabId) => {
               const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;
               const offset = toolbarH + padTop;
               tab.style.setProperty('--tab-header-offset', offset + 'px');
-    });
-  }
+            });
+          }
+        
+          // inicial + resize
+          window.addEventListener('load', setToolbarOffsets);
+          window.addEventListener('resize', setToolbarOffsets);
+        
+          // se a barra “Novo” mudar de altura (quebrar linha, fonte, etc.)
+          const ro = new ResizeObserver(setToolbarOffsets);
+          document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));
+        })();
+    </script>
+
+    <script>
+        (function () {
+          function setToolbarOffsets() {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+              const toolbar = tab.querySelector('.new-button-fixed');
+              const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 0;
+              const padTop = parseFloat(getComputedStyle(tab).paddingTop) || 0;
+              const offset = toolbarH + padTop;
+              tab.style.setProperty('--tab-header-offset', offset + 'px');
+            });
+          }
         
           window.addEventListener('load', setToolbarOffsets);
           window.addEventListener('resize', setToolbarOffsets);
         
           const ro = new ResizeObserver(setToolbarOffsets);
           document.querySelectorAll('.new-button-fixed').forEach(el => ro.observe(el));
-})();
+        })();
 
-        let deleteContext = { tabId: null, recordId: null
-};
+        let deleteContext = { tabId: null, recordId: null };
         
         function confirmDelete(tabId, recordId) {
             deleteContext.tabId = tabId;
@@ -1081,51 +1133,409 @@ const renderTable = (items, tabId) => {
         
             overlay.style.display = 'block';
             popup.style.display = 'flex';
-}
+        }
         
         function cancelDelete() {
-            deleteContext = { tabId: null, recordId: null
-  };
+            deleteContext = { tabId: null, recordId: null };
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('delete-confirmation-popup').style.display = 'none';
-}
+        }
         
         async function executeDelete() {
             if (!deleteContext.tabId || !deleteContext.recordId) {
                 cancelDelete();
                 return;
-  }
+            }
         
             try {
                 const payload = {
-                    tab_name: deleteContext.tabId,
-                    id: deleteContext.recordId,
-                    tipo_registro: "delete"
-    };
+                    table: deleteContext.tabId,
+                    id: deleteContext.recordId
+                };
         
-                const response = await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update",
-    {
+                const response = await fetch("https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-deletar", {
                     method: "POST",
-                    headers: {
-        "Content-Type": "application/json"
-      },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
-    });
+                });
         
                 if (!response.ok) throw new Error('Falha ao excluir o registro.');
         
-                showAlert('Registro excluído com sucesso!', 'success',
-    2000);
-                cachedData[deleteContext.tabId
-    ] = null;
+                showAlert('Registro excluído com sucesso!', 'success', 2000);
+                cachedData[deleteContext.tabId] = null;
                 await fetchTabData(deleteContext.tabId);
-  } catch (error) {
-                showAlert('Erro ao excluir: ' + error.message, 'error',
-    3000);
-  } finally {
+            } catch (error) {
+                showAlert('Erro ao excluir: ' + error.message, 'error', 3000);
+            } finally {
                 cancelDelete();
+            }
+        }
+        
+    </script>
+    
+    <script>
+    
+        /****************************
+         * Popup de novo tratamento 
+         ****************************/
+        
+        function openTratamentoPopup(record = null) {
+            //console.log('openTratamentoPopup::', ' record:', record);
+            const popup = document.getElementById('pop-up-tratamento');
+            const overlay = document.getElementById('overlay');
+        
+            if (record) {
+                // Preenche campos para edição
+                document.getElementById('tratamento-id').value = record.id || '';
+        
+                // Seleciona as opções correspondentes nos combos
+                document.getElementById('tratamento-vet-select').value = record.veterinario_id || '';
+                document.getElementById('tratamento-med-select').value = record.medicamento_id || '';
+                document.getElementById('tratamento-via-select').value = record.via_id || '';
+                document.getElementById('tratamento-dosagem-select').value = record.dosagem_id || '';
+        
+                // Fração x Dose
+                const fracaoCheckbox = document.getElementById('tratamento-fracao');
+                const isFracao = record.fracao_id;
+                
+                fracaoCheckbox.checked = isFracao;
+                //console.log('--> createDoseInput:: isFracao: ', isFracao, ' | dose: ', record.Dose)
+                //console.log('--> record: ', record);
+                createDoseInput(isFracao, record.Dose);
+        
+                // Data início, horário e intervalo
+                document.getElementById('tratamento-inicio-input').value = record.data || '';
+                document.getElementById('tratamento-horario-input').value = record.horario_id || '';
+                document.getElementById('tratamento-intervalo-select').value = record.intervalo_id || '';
+        
+                // Duração / contínuo (nova lógica com continuo_id)
+                const chkContinuo = document.getElementById('tratamento-continuo');
+                const diasInput = document.getElementById('tratamento-dias-input');
+                const diasWrapper = document.getElementById('tratamento-dias-wrapper');
+                
+                chkContinuo.checked = !!record.continuo_id;
+                
+                if (record.continuo_id) {
+                    diasInput.value = ''; // limpa o campo de dias quando contínuo
+                    diasWrapper.style.display = 'none';
+                } else {
+                    diasInput.value = record.duracao_id || '';
+                    diasWrapper.style.display = 'block';
+                }
+
+        
+                // Observações
+                document.getElementById('tratamento-observacoes-input').value = record.Observações || '';
+                
+            } else {
+                // Novo registro
+                document.getElementById('tratamento-id').value = '';
+                document.getElementById('tratamento-vet-select').value = '';
+                document.getElementById('tratamento-med-select').value = '';
+                document.getElementById('tratamento-via-select').value = '';
+                document.getElementById('tratamento-dosagem-select').value = '';
+                document.getElementById('tratamento-fracao').checked = false;
+                createDoseInput(false);
+                
+                const hoje = new Date().toISOString().split('T')[0];
+                document.getElementById('tratamento-inicio-input').value = hoje;
+                document.getElementById('tratamento-horario-input').value = '08:00';
+                document.getElementById('tratamento-intervalo-select').value = '';
+                document.getElementById('tratamento-continuo').checked = false;
+                document.getElementById('tratamento-dias-input').value = '';
+                document.getElementById('tratamento-observacoes-input').value = '';
+            }
+        
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+        }
+
+        function createDoseInput(isFraction, initialValue = null) {
+          //console.log('createDoseInput:: isFraction', isFraction);
+          //console.log('createDoseInput:: initialValue', initialValue);
+          const wrapper = document.getElementById('tratamento-dose-wrapper');
+          wrapper.innerHTML = '';
+          if (isFraction) {
+            const select = document.createElement('select');
+            select.className = 'date-input';
+            select.id = 'tratamento-dose-select';
+            doseFractionOptions.forEach(optText => {
+              const opt = document.createElement('option');
+              opt.value = optText;
+              opt.textContent = optText;
+              select.appendChild(opt);
+            });
+            wrapper.appendChild(select);
+            if (initialValue) select.value = initialValue;
+          } else {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.step = '0.1';
+            input.id = 'tratamento-dose-input';
+            input.className = 'date-input';
+            wrapper.appendChild(input);
+            if (initialValue) input.value = initialValue;
+          }
+        }
+
+
+function closeTratamentoPopup() {
+  const popup = document.getElementById('pop-up-tratamento');
+  const overlay = document.getElementById('overlay');
+
+  // 🔹 Fecha popup e overlay
+  popup.style.display = 'none';
+  overlay.style.display = 'none';
+
+  // 🔹 Limpa todos os campos destacados em vermelho
+  document.querySelectorAll('.date-input').forEach(el => {
+    el.style.border = '1px solid var(--border-color)';
+  });
+
+  // 🔹 (opcional) limpa também o campo de observações e valores temporários
+  document.querySelectorAll('#pop-up-tratamento input, #pop-up-tratamento select, #pop-up-tratamento textarea').forEach(el => {
+    el.style.border = '1px solid var(--border-color)';
+  });
+}
+
+    
+        // Associa os botões ao popup
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('cancel-tratamento').onclick = closeTratamentoPopup;
+            document.getElementById('confirm-tratamento').onclick = saveTratamentoRecord;
+        });
+    </script>
+
+    <script>
+    const doseFractionOptions = [
+      '1/4', '1/3', '1/2', '3/4',
+      '1+1/4', '1+1/3', '1+1/2', '1+3/4'
+    ];
+    
+    async function fetchOptions(table) {
+      const url = 'https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-data-tables';
+      const payload = {
+                      "table": table,
+                      "canil_id": ${canil_id}
+                    };
+      //console.log('payload: ',payload);
+      const response = await fetch(url,{
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify(payload)
+                                        });
+      //console.log('response: ',response);
+      const data = await response.json();
+      //console.log('data: ',data);
+      return data.items || [];
+    }
+    
+    async function populateSelect(selectId, table) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '<option value="">Selecione...</option>';
+    
+      const items = await fetchOptions(table);
+    
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;         // ✅ valor sempre = id
+        opt.textContent = item.nome; // ✅ texto sempre = nome
+        select.appendChild(opt);
+      });
+    }
+    
+    function closeTratamentoPopup() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('pop-up-tratamento').style.display = 'none';
+    }
+    
+    async function initTratamentoPopup() {
+      // Combos dinâmicos
+      await populateSelect('tratamento-vet-select', 'veterinarios');
+      await populateSelect('tratamento-med-select', 'medicamentos');
+      await populateSelect('tratamento-via-select', 'vias', 'id');
+        await populateSelect('tratamento-dosagem-select', 'dosagens', 'id');
+    
+      // Intervalos fixos
+      const intervalos = [1, 2, 4, 6, 8, 12, 24, 36, 48, 72];
+      const intervaloSelect = document.getElementById('tratamento-intervalo-select');
+      intervalos.forEach(i => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i + ' h';
+        intervaloSelect.appendChild(opt);
+      });
+    
+      // Dose dinâmica
+      const fracaoCheckbox = document.getElementById('tratamento-fracao');
+      fracaoCheckbox.addEventListener('change', () => createDoseInput(fracaoCheckbox.checked));
+      createDoseInput(false);
+    
+      // Botões
+      document.getElementById('cancel-tratamento').onclick = closeTratamentoPopup;
+      document.getElementById('confirm-tratamento').onclick = saveTratamentoRecord;
+    }
+    
+async function saveTratamentoRecord() {
+  try {
+    // 🔹 Limpa destaques anteriores
+    document.querySelectorAll('.date-input').forEach(el => {
+      el.style.border = '1px solid var(--border-color)';
+    });
+
+    // 1️⃣ Coleta os valores
+    const id = document.getElementById('tratamento-id').value;
+    const veterinario = document.getElementById('tratamento-vet-select');
+    const medicamento = document.getElementById('tratamento-med-select');
+    const via = document.getElementById('tratamento-via-select');
+    const dosagem = document.getElementById('tratamento-dosagem-select');
+    const intervalo = document.getElementById('tratamento-intervalo-select');
+    const inicio = document.getElementById('tratamento-inicio-input');
+    const horario = document.getElementById('tratamento-horario-input');
+    const descricao = document.getElementById('tratamento-observacoes-input');
+    const chkContinuo = document.getElementById('tratamento-continuo');
+    const duracaoInput = document.getElementById('tratamento-dias-input');
+    const isFraction = document.getElementById('tratamento-fracao').checked;
+
+    let dose = '';
+    const doseSelect = document.getElementById('tratamento-dose-select');
+    const doseInput = document.getElementById('tratamento-dose-input');
+    if (isFraction && doseSelect) dose = doseSelect.value;
+    if (!isFraction && doseInput) dose = doseInput.value;
+
+    // 2️⃣ Campos obrigatórios
+    const requiredFields = [
+      veterinario, medicamento, via, dosagem,
+      inicio, horario, intervalo
+    ];
+
+    if (isFraction) {
+      if (!doseSelect || !doseSelect.value) requiredFields.push(document.getElementById('tratamento-dose-wrapper'));
+    } else {
+      if (!doseInput || !doseInput.value) requiredFields.push(document.getElementById('tratamento-dose-wrapper'));
+    }
+
+    if (!chkContinuo.checked) requiredFields.push(duracaoInput);
+
+    // 3️⃣ Validação visual
+    let allValid = true;
+
+requiredFields.forEach(el => {
+  if (!el) return;
+
+  // 🔸 Se for o wrapper do campo de dose, pega o input/select interno
+  let targetEl = el;
+  if (el.id === 'tratamento-dose-wrapper') {
+    targetEl = el.querySelector('input, select');
+  }
+
+  const value = targetEl?.value?.trim?.() || '';
+  const isInvalid = !value || value === 'null' || value === 'undefined';
+
+  if (isInvalid) {
+    targetEl.style.border = '1px solid #d9534f';
+    allValid = false;
+  } else {
+    targetEl.style.border = '1px solid var(--border-color)';
+  }
+
+  // Remove o destaque ao corrigir
+  targetEl.addEventListener('input', () => {
+    targetEl.style.border = '1px solid var(--border-color)';
+  }, { once: true });
+});
+
+    if (!allValid) {
+      showAlert('Preencha todos os campos obrigatórios.', 'error', 2500);
+      return;
+    }
+
+    // 4️⃣ Monta payload
+    const payload = {
+      table: 'prescricao',
+      load: {
+        animal_id: '${animal.animal_id}',
+        veterinario_id: veterinario.value || null,
+        inicio: inicio.value || null,
+        inicio_horario: horario.value || null,
+        medicamento: medicamento.value ? parseInt(medicamento.value) : null,
+        via: via.value || '',
+        dosagem: dosagem.value || '',
+        intervalo_horas: intervalo.value ? parseInt(intervalo.value) : null,
+        descricao: descricao.value.trim() || '',
+        continuo: chkContinuo.checked,
+        duracao_dias: chkContinuo.checked ? null : (duracaoInput.value ? parseInt(duracaoInput.value) : null),
+        dose: dose || '',
+        finalizada: false,
+        salva: true
+      }
+    };
+
+    if (id) payload.load.id = parseInt(id);
+
+    console.log('💾 Salvando/atualizando prescrição:', payload);
+
+    // 5️⃣ Envio
+    const response = await fetch('https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-salvar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Falha ao salvar a prescrição. Código: ' + response.status);
+
+    showAlert(id ? 'Tratamento atualizado com sucesso!' : 'Tratamento salvo com sucesso!', 'success', 2000);
+    cachedData['tratamentos'] = null;
+    await fetchTabData('tratamentos');
+    closeTratamentoPopup();
+
+  } catch (error) {
+    console.error('Erro ao salvar tratamento:', error);
+    showAlert('Erro ao salvar tratamento: ' + error.message, 'error', 3000);
   }
 }
+
+
+    document.addEventListener('DOMContentLoaded', initTratamentoPopup);
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const chkContinuo = document.getElementById('tratamento-continuo');
+        const diasWrapper = document.getElementById('tratamento-dias-wrapper');
+        const diasInput = document.getElementById('tratamento-dias-input');
+    
+        function toggleDiasField() {
+          if (chkContinuo.checked) {
+            diasWrapper.style.display = 'none';
+            diasInput.value = 9999;  // valor especial para submissão
+          } else {
+            diasWrapper.style.display = 'block';
+            diasInput.value = '';    // limpa quando desmarca
+          }
+        }
+    
+        chkContinuo.addEventListener('change', toggleDiasField);
+    
+        // estado inicial
+        toggleDiasField();
+      });
+
+      // Função para tratar o clique em um tratamento existente
+      function handleTratamentoClick(rowElement) {
+          const itemDataString = rowElement.getAttribute('data-record');
+          const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+          const record = JSON.parse(safeJsonString);
+      
+          openTratamentoPopup(record);
+      }
+
+      function resetFieldBorders(containerId) {
+        document.querySelectorAll('#'+containerId+' input, #'+containerId+' select, #'+containerId+' textarea').forEach(el => {
+          el.style.border = '1px solid var(--border-color)';
+        });
+      }
         
     </script>
 
@@ -1134,8 +1544,4 @@ const renderTable = (items, tabId) => {
 </html>
 `;
 
-return [
-  { json: { html: html
-    }
-  }
-];
+return [{ json: { html: html } }];
