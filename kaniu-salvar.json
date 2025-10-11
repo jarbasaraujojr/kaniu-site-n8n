@@ -1,0 +1,561 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "prescricao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a61f4e1c-76ed-4a35-8347-baad51974634"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "tratamento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2d8f1bdb-c92c-4aa7-a470-756a9df9e102",
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "eventos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "eventos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c71c822d-9e32-43a0-817b-36eb5ffb8a75",
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "veterinarios",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "veterinarios"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bb041488-f836-497d-8973-70be5478192b",
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "medicamentos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "medicamentos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "46331c26-4379-4b66-8d62-ec8662fe1575",
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "vias",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vias"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6932e067-e6c9-4c48-8548-6d56ab1b1c9b",
+                    "leftValue": "={{ $json.body?.table || $json.query?.table }}",
+                    "rightValue": "dosagens",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "dosagens"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        256,
+        -240
+      ],
+      "id": "b154289d-81f7-4d59-a6a7-284e4e0a4232",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "tableId": "prescricao",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "inicio",
+              "fieldValue": "={{ $json.dados.inicio }}"
+            },
+            {
+              "fieldId": "medicamento",
+              "fieldValue": "={{ $json.dados.medicamento }}"
+            },
+            {
+              "fieldId": "continuo",
+              "fieldValue": "={{ $json.dados.continuo }}"
+            },
+            {
+              "fieldId": "duracao_dias",
+              "fieldValue": "={{ $json.dados.duracao_dias }}"
+            },
+            {
+              "fieldId": "dosagem",
+              "fieldValue": "={{ $json.dados.dosagem }}"
+            },
+            {
+              "fieldId": "via",
+              "fieldValue": "={{ $json.dados.via }}"
+            },
+            {
+              "fieldId": "descricao",
+              "fieldValue": "={{ $json.dados.descricao }}"
+            },
+            {
+              "fieldId": "intervalo_horas",
+              "fieldValue": "={{ $json.dados.intervalo_horas }}"
+            },
+            {
+              "fieldId": "inicio_horario",
+              "fieldValue": "={{ $json.dados.inicio_horario }}"
+            },
+            {
+              "fieldId": "dose",
+              "fieldValue": "={{ $json.dados.dose }}"
+            },
+            {
+              "fieldId": "receita",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        -544
+      ],
+      "id": "c546e76f-6077-42aa-82b8-ef995bd16314",
+      "name": "Add Tratamento",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kaniu-salvar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        -176
+      ],
+      "id": "cb0bb3ad-d18b-4e9d-8009-ca97e477aba2",
+      "name": "Add",
+      "webhookId": "5bd6e51a-dbe0-442c-8c54-0d194833088c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "05f4bd55-6a51-432e-9e4c-e247c0fe18c2",
+              "name": "dados",
+              "value": "={{ $json.body.load }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        -528
+      ],
+      "id": "3b305e45-9535-4a40-b4a6-ec88000eff56",
+      "name": "Set",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "tableId": "receita",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "data",
+              "fieldValue": "={{ $json.dados.inicio }}"
+            },
+            {
+              "fieldId": "veterinario",
+              "fieldValue": "={{ $json.dados.veterinario_id }}"
+            },
+            {
+              "fieldId": "animal",
+              "fieldValue": "={{ $json.dados.animal_id }}"
+            },
+            {
+              "fieldId": "salva",
+              "fieldValue": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -624
+      ],
+      "id": "ed07d5e5-06eb-4be6-b871-09931ebe84b7",
+      "name": "Add Receita",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1200,
+        -544
+      ],
+      "id": "0c3bd8b3-457d-4785-9a5c-a781682bc3e8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1600,
+        -544
+      ],
+      "id": "ae8edac0-d85b-4f5c-9d6b-306e7cfe5dee",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "05f4bd55-6a51-432e-9e4c-e247c0fe18c2",
+              "name": "dados",
+              "value": "={{ $json.body.load }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        -400
+      ],
+      "id": "54f12a22-0f06-4598-ae3d-a4172d63481b",
+      "name": "Set1",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "tableId": "registros",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tipo",
+              "fieldValue": "={{ $json.dados.tipo_evento_id }}"
+            },
+            {
+              "fieldId": "veterinario_id",
+              "fieldValue": "={{ $json.dados.veterinario_id }}"
+            },
+            {
+              "fieldId": "descricao",
+              "fieldValue": "={{ $json.dados.descricao }}"
+            },
+            {
+              "fieldId": "animal_id",
+              "fieldValue": "={{ $json.dados.animal_id }}"
+            },
+            {
+              "fieldId": "clinica",
+              "fieldValue": "={{ $json.dados.clinica_id }}"
+            },
+            {
+              "fieldId": "previsto_data",
+              "fieldValue": "={{ $json.dados.data_previsto }}"
+            },
+            {
+              "fieldId": "realizado_data",
+              "fieldValue": "={{ $json.dados.data_realizado }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        -400
+      ],
+      "id": "3783d213-e2b1-4a42-b63a-ef0d68a5c953",
+      "name": "Add Evento",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Tratamento": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Add Receita",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add Receita": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Add Tratamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set1": {
+      "main": [
+        [
+          {
+            "node": "Add Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Add": [
+      {
+        "headers": {
+          "host": "karah-n8n.uzd6db.easypanel.host",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+          "content-length": "173",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+          "content-type": "application/json",
+          "dnt": "1",
+          "origin": "null",
+          "priority": "u=1, i",
+          "sec-ch-ua": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site",
+          "x-forwarded-for": "201.77.174.189",
+          "x-forwarded-host": "karah-n8n.uzd6db.easypanel.host",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "03196bb10cdb",
+          "x-real-ip": "201.77.174.189"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "table": "eventos",
+          "load": {
+            "animal_id": "8bd4401b-a768-40d6-ba0d-79c5e7a05304",
+            "data": "2025-10-11",
+            "descricao": "teste de evento",
+            "tipo_evento_id": null,
+            "veterinario_id": null
+          }
+        },
+        "webhookUrl": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu-salvar",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026"
+  }
+}
