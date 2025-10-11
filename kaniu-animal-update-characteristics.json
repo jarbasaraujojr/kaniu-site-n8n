@@ -1,0 +1,637 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "especie",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        1632
+      ],
+      "id": "27ee6146-a21f-4ce9-8de2-9bedb0ce5538",
+      "name": "Especie",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "raça",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        1760
+      ],
+      "id": "83afbb71-dcb7-4889-ba34-ba34f2fbb0b5",
+      "name": "Raca",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "genero",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        1888
+      ],
+      "id": "580c8215-b7a0-4009-b090-85c5d966c4b0",
+      "name": "Genero",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "porte",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        2016
+      ],
+      "id": "2c6401e4-5c7b-4ac6-b657-a5320df5c0c0",
+      "name": "Porte",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "pelagem",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        2272
+      ],
+      "id": "d73b5fed-5bda-447b-812b-a5a8e91f5378",
+      "name": "Pelagem",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc19c9ed-178b-44f5-bd3a-c3b1c90c56c5",
+              "name": "animal_id",
+              "value": "={{ $json.body.animal_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9e0be413-efd0-4574-aaf8-498eb27f77cf",
+              "name": "tabela",
+              "value": "={{ $json.body.caracteristica }}s",
+              "type": "string"
+            },
+            {
+              "id": "2152d7e8-b895-4c5b-bc85-3d0a4c7aaab2",
+              "name": "valor",
+              "value": "={{ $json.body?.caracteristica_label || $json.body?.data_nascimento }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        2016
+      ],
+      "id": "5999d5ea-81bb-4339-b3b4-6a180854081f",
+      "name": "Campos",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "cor",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        2144
+      ],
+      "id": "ed34eef6-698b-450e-9609-917afab2828f",
+      "name": "Cor",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "animais",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "animal_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.animal_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nascimento",
+              "fieldValue": "={{ $json.valor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        2400
+      ],
+      "id": "8e58b5e7-b3d8-4bda-a970-f6142e09439d",
+      "name": "Nascimento",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "vfFMnH1cZndqgot0",
+          "name": "Viralatinhaz Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kaniu_animal_update",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1184,
+        2016
+      ],
+      "id": "a552ee33-05ca-40eb-9e70-1fe530ca1df9",
+      "name": "Animal Update",
+      "webhookId": "531d7322-7237-4276-a14f-1d01b1d88d28"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "especies",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b1468067-3d6c-4174-bf36-ccabcd5216cc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "especies"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e056b685-8d5c-4af2-ac0f-fdebf6673acb",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "racas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "racas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1b1ef4db-b4d3-4248-a32c-505815042752",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "generos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "52ecb0df-1c41-4692-b749-cdf583a2b018",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "portes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "portes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e4ace0c9-ae52-4792-ba3d-dd52a6d7691f",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "core",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cores"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a4e71a7d-8376-4f81-aab8-53cace691e00",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "pelagens",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pelagens"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9874e6fd-636b-42f4-8833-eb653dcb2b4f",
+                    "leftValue": "={{ $json.tabela }}",
+                    "rightValue": "nascimentos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nascimentos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -752,
+        1936
+      ],
+      "id": "d565711c-6c08-4447-82b9-25a468a67243",
+      "name": "Switch4",
+      "notesInFlow": true
+    }
+  ],
+  "connections": {
+    "Campos": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Animal Update": {
+      "main": [
+        [
+          {
+            "node": "Campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "Especie",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Raca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Genero",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Porte",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pelagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nascimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Animal Update": [
+      {
+        "headers": {
+          "host": "karah-n8n.uzd6db.easypanel.host",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+          "content-length": "113",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+          "cache-control": "no-cache",
+          "content-type": "application/json",
+          "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FCuRonzoh%2FasFsrkD3ctaA252N%2FdASUZE%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19cdaQtWm6ffyQUabVZV9V8H9khgHrTS%2Bo%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2BwlXU4V6qbmnLjFc4fL3ZK63O8pXk3WW%2FvlehYSHF%2B9q4VLXVrU9H55YcSMGBQMrZ34hbu84J42g%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19JJ7KDNqXmDTYTi6wDuwvc%2FuHk70RsHBI8DKK1aMWhr4HeGUWdylRlHX9mSVKQ94DJfUu6jXl3VTXGn%2FEh1rXR%2FcRqtmoKFn5H61QUtVz2O22L6Xy36X%2F9KsXRFN%2BUWwQTa%2BOxNLk5xBpR0Kl3YkE5GTSSQDUpqE4%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BYNMdiQKBZiem8PLFPN2uFja8G1KcmoMYofuUqk1xoa3IHM8AP4BBGctcSv1rzDDr2WbBQ4yNibncQ%2FpnYNodlExLAuitbq7aH9eBMDuSxgTsCnCJEsDsUjEzXBROnqIUsTiAoq%2FWsSA%3D%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B2gXsfXcfJ0ukMUdcuMAJZDMBsqBYCWTIp3El2WAVg0a5h2CmMgvp%2B%2F9KjabunbO%2BjDD%2BuFhf4%2FwPUPz6gzPHRPrIHlSm8LMDAoF03LHawrbEsMismIg4Szd%2FqNQ9tDO4m5WM2HszWSQ%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22distinct_id%22%3A%22c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026%2336e98418-cb69-4c27-b2c6-02d98ffe06fd%22%2C%22%24sesid%22%3A%5Bnull%2Cnull%2Cnull%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2F31.97.251.141%3A3000%2F%22%2C%22u%22%3A%22https%3A%2F%2Fkarah-n8n.uzd6db.easypanel.host%2Fsetup%22%7D%7D",
+          "dnt": "1",
+          "origin": "https://karah-n8n.uzd6db.easypanel.host",
+          "pragma": "no-cache",
+          "priority": "u=1, i",
+          "referer": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu?animal_id=8bd4401b-a768-40d6-ba0d-79c5e7a05304",
+          "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "x-forwarded-for": "190.52.75.108",
+          "x-forwarded-host": "karah-n8n.uzd6db.easypanel.host",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "9a520392bf62",
+          "x-real-ip": "190.52.75.108"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "animal_id": "8bd4401b-a768-40d6-ba0d-79c5e7a05304",
+          "caracteristica": "nascimento",
+          "data_nascimento": "2022-09-20"
+        },
+        "webhookUrl": "https://karah-n8n.uzd6db.easypanel.host/webhook/kaniu_animal_update",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "c241ff24a9ad53940b8c3b07f3121394f2a5667daf04331aaa56a13d92e8e026"
+  }
+}
